@@ -28,7 +28,7 @@ export const THEMES: Record<ThemeName, Record<string, string>> = {
     '--tertiary': '#2d3950',
     '--footer': '#212121',
     '--accent': '#da0363',
-    '--accent2': '#38454f',
+    '--accent2': '#5e8fb5',
     '--hint': '#939393',
     '--warn': '#ed4f4f',
     '--success': '#356a59',

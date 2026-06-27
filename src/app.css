@@ -54,12 +54,45 @@ html[data-theme='light'] {
 }
 
 /* ─── Base body ──────────────────────────────────────────────────────────── */
+/* html is the scroll container with a permanently reserved scrollbar gutter, so
+   locking scroll for the search modal (overflow:hidden) never shifts the layout
+   — on open or while the close animation plays. Overlay scrollbars reserve no
+   gutter, so mobile is unaffected. */
+html {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--background-text);
   font-family: var(--paragraph-font);
   margin: 0;
   padding: 0;
+}
+
+/* ─── Custom scrollbar (matches the theme) ───────────────────────────────────
+   Firefox uses scrollbar-width/-color; WebKit/Blink the pseudo-elements. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent2) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent2);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent2) 70%, var(--accent));
+  background-clip: padding-box;
 }
 
 /* ─── Code blocks (Shiki, defaultColor: false) ───────────────────────────────
