@@ -2,7 +2,7 @@
   // Minimal inline SVG icons (feather-style), stroked with currentColor so they
   // inherit the surrounding text colour. Replaces emoji in UI chrome.
   let { name, size = 20, class: klass = '' }: {
-    name: 'sun' | 'moon' | 'chevron' | 'home' | 'menu' | 'x' | 'search' | 'file' | 'hash' | 'github' | 'heart' | 'edit' | 'book' | 'clipboard' | 'list' | 'paperclip';
+    name: 'sun' | 'moon' | 'chevron' | 'home' | 'menu' | 'x' | 'search' | 'file' | 'hash' | 'github' | 'heart' | 'edit' | 'book' | 'clipboard' | 'list' | 'paperclip' | 'folder';
     size?: number;
     class?: string;
   } = $props();
@@ -70,6 +70,8 @@
     <line x1="3" y1="18" x2="3.01" y2="18" />
   {:else if name === 'paperclip'}
     <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+  {:else if name === 'folder'}
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
   {/if}
 </svg>
 
