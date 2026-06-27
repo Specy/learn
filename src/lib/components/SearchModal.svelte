@@ -229,8 +229,13 @@
 											<span class="r-sep">›</span>
 											<span class="r-heading">{r.heading}</span>
 										</span>
-										{#if r.snippet}<span class="r-snippet">{r.snippet}</span
-											>{/if}
+										{#if r.snippet.hit || r.snippet.after || r.snippet.before}
+											<span class="r-snippet"
+												>{r.snippet.before}{#if r.snippet.hit}<mark
+														>{r.snippet.hit}</mark
+													>{/if}{r.snippet.after}</span
+											>
+										{/if}
 									{/if}
 								</span>
 								{#if scopeLabelText !== ""}
@@ -281,7 +286,7 @@
 		max-height: 72vh;
 		display: flex;
 		flex-direction: column;
-		background: var(--glass-1);
+		background: var(--modal-glass);
 		backdrop-filter: blur(0.8rem);
 		border: 1px solid var(--background);
 		box-shadow: 0 16px 48px var(--shadow-color);
@@ -404,12 +409,20 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+	/* Plain inline snippet: the match sits ~1/3 in (set in makeSnippet) and the
+	   line clips at its end — no flex gaps. The matched text is highlighted. */
 	.r-snippet {
 		color: var(--muted);
 		font-size: 0.85rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.r-snippet mark {
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
+		color: var(--background-text);
+		border-radius: 0.2rem;
+		padding: 0 0.15rem;
 	}
 
 	.chip {

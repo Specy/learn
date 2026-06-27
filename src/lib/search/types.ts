@@ -18,6 +18,17 @@ export interface SearchEntry {
 
 export type ResultScope = 'current' | 'same-course' | 'other';
 
+/**
+ * A preview snippet split around the matched text so the UI can highlight the
+ * match and centre it: `before` + `hit` (the matched text) + `after`. For a
+ * non-text match (or no match) `hit` is '' and the excerpt is in `after`.
+ */
+export interface SearchSnippet {
+  before: string;
+  hit: string;
+  after: string;
+}
+
 /** Where the user currently is, used to rerank and to build language-scoped urls. */
 export interface SearchContext {
   lang: string;
@@ -33,7 +44,7 @@ export interface SearchResult {
   courseTitle: string;
   heading: string | null;
   url: string;             // /{lang}/{notePath}{#anchor}
-  snippet: string;
+  snippet: SearchSnippet;
 }
 
 // ─── Worker RPC ──────────────────────────────────────────────────────────────
