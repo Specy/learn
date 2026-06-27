@@ -39,6 +39,24 @@ describe('buildTree', () => {
     expect(g.modules).toEqual([]);
     // lecture (01-intro) and resource (90-formulario) interleaved in prefix order
     expect(g.notes.map((n: any) => n.slug)).toEqual(['intro', 'formulario']);
+    // `all` mirrors the natural order for the unified list (no modules here)
+    expect(g.all.map((n: any) => n.slug)).toEqual(['intro', 'formulario']);
+  });
+
+  it('keeps modules and notes interleaved by prefix in `all`', () => {
+    const r = buildTree([
+      { relPath: '01-c/index.md', frontmatter: { title: 'C' }, content: '' },
+      { relPath: '01-c/01-intro.md', frontmatter: { title: 'Intro', type: 'lecture' }, content: '' },
+      { relPath: '01-c/02-mod/index.md', frontmatter: { title: 'Mod' }, content: '' },
+      { relPath: '01-c/03-outro.md', frontmatter: { title: 'Outro', type: 'lecture' }, content: '' }
+    ]);
+    const c = getNodeByPath(r, ['c']) as any;
+    const g = groupChildren(c);
+    expect(g.all.map((n: any) => `${n.kind}:${n.slug}`)).toEqual([
+      'note:intro',
+      'folder:mod',
+      'note:outro'
+    ]);
   });
 
   it('nests modules and lists every route prefix-stripped', () => {
