@@ -132,21 +132,42 @@ describe('rerank dedup', () => {
 });
 
 describe('makeSnippet', () => {
-  it('returns short text whole', () => {
-    expect(makeSnippet(entry({ id: 1, text: 'short body' }))).toBe('short body');
+  it('returns short text as the excerpt with nothing highlighted', () => {
+    expect(makeSnippet(entry({ id: 1, text: 'short body' }))).toEqual({
+      before: '',
+      hit: '',
+      after: 'short body'
+    });
   });
-  it('windows around the first match index', () => {
-    const long = 'x'.repeat(200) + 'TARGET' + 'y'.repeat(200);
-    const snip = makeSnippet(entry({ id: 1, text: long }), [
-      { key: 'text', value: long, indices: [[200, 205]] }
+
+  it('positions the match about a third in, with more context after', () => {
+    const long = 'a'.repeat(200) + ' TARGET ' + 'b'.repeat(200);
+    const start = 201; // 'T'
+    const end = 206; //   'T' of TARGET (inclusive)
+    const s = makeSnippet(entry({ id: 1, text: long }), [
+      { key: 'text', value: long, indices: [[start, end]] }
     ]);
-    expect(snip).toContain('TARGET');
-    expect(snip.length).toBeLessThan(160);
-    expect(snip.startsWith('…')).toBe(true);
+    expect(s.hit).toBe('TARGET'); // correct alignment: exact matched substring
+    expect(s.before.startsWith('…')).toBe(true);
+    expect(s.after.endsWith('…')).toBe(true);
+    // match sits ~1/3 in → more context after than before
+    expect(s.after.length).toBeGreaterThan(s.before.length);
   });
-  it('truncates with an ellipsis when no indices', () => {
+
+  it('selects the LONGEST matched range, not the first', () => {
+    const text = 'xx ab yy abcdef zz';
+    const s = makeSnippet(entry({ id: 1, text }), [
+      { key: 'text', value: text, indices: [[3, 4], [9, 14]] }
+    ]);
+    expect(s.hit).toBe('abcdef');
+  });
+
+  it('caps the excerpt length when there is no match', () => {
     const long = 'a '.repeat(200);
-    const snip = makeSnippet(entry({ id: 1, text: long }));
-    expect(snip.endsWith('…')).toBe(true);
+    const s = makeSnippet(entry({ id: 1, text: long }));
+    expect(s.hit).toBe('');
+    expect(s.before).toBe('');
+    expect(s.after.endsWith('…')).toBe(true);
+    expect(s.after.length).toBeLessThanOrEqual(141);
   });
 });
