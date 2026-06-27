@@ -221,26 +221,28 @@
 									<Icon name={r.kind === "file" ? "file" : "hash"} size={16} />
 								</span>
 								<span class="r-body">
-									{#if r.kind === "file"}
-										<span class="r-title">{r.noteTitle}</span>
-									{:else}
-										<span class="r-crumb">
-											<span class="r-note">{r.noteTitle}</span>
-											<span class="r-sep">›</span>
-											<span class="r-heading">{r.heading}</span>
-										</span>
-										{#if r.snippet.hit || r.snippet.after || r.snippet.before}
-											<span class="r-snippet"
-												>{r.snippet.before}{#if r.snippet.hit}<mark
-														>{r.snippet.hit}</mark
-													>{/if}{r.snippet.after}</span
-											>
+									<span class="r-head">
+										{#if r.kind === "file"}
+											<span class="r-title">{r.noteTitle}</span>
+										{:else}
+											<span class="r-crumb">
+												<span class="r-note">{r.noteTitle}</span>
+												<span class="r-sep">›</span>
+												<span class="r-heading">{r.heading}</span>
+											</span>
 										{/if}
+										{#if scopeLabelText !== ""}
+											<span class="chip chip-{r.scope}">{scopeLabelText}</span>
+										{/if}
+									</span>
+									{#if r.kind !== "file" && (r.snippet.hit || r.snippet.after || r.snippet.before)}
+										<span class="r-snippet"
+											>{r.snippet.before}{#if r.snippet.hit}<mark
+													>{r.snippet.hit}</mark
+												>{/if}{r.snippet.after}</span
+										>
 									{/if}
 								</span>
-								{#if scopeLabelText !== ""}
-									<span class="chip chip-{r.scope}">{scopeLabelText}</span>
-								{/if}
 							</a>
 						</li>
 					{:else}
@@ -376,21 +378,34 @@
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 0.1rem;
+		gap: 0.3rem;
+	}
+	/* Title/crumb and the scope tag share one row; the tag sits at the right and
+	   the title shrinks first (it rarely fills the width and matters less). The
+	   snippet below then gets the full width. */
+	.r-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		min-width: 0;
 	}
 	.r-title {
+		flex: 0 1 auto;
+		min-width: 0;
 		font-weight: 700;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.r-crumb {
+		flex: 0 1 auto;
 		display: flex;
 		align-items: baseline;
 		gap: 0.4rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		min-width: 0;
 	}
 	.r-note {
 		color: var(--muted);
@@ -427,6 +442,8 @@
 
 	.chip {
 		flex: none;
+		margin-left: auto;
+		align-self: center;
 		font-size: 0.7rem;
 		font-weight: 600;
 		padding: 0.18rem 0.5rem;
@@ -469,9 +486,6 @@
 	@media (max-width: 768px) {
 		.spotlight-wrap {
 			padding: 8vh 0.6rem 1rem;
-		}
-		.r-snippet {
-			display: none;
 		}
 	}
 </style>
