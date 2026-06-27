@@ -7,8 +7,23 @@
 	import { t } from "$lib/i18n"
 	import RenderedMarkdown from "$lib/components/RenderedMarkdown.svelte"
 	import SEO from "$lib/components/SEO.svelte"
+	import Authors from "$lib/components/Authors.svelte"
+	import Icon from "$lib/components/Icon.svelte"
 
 	let { data }: PageProps = $props()
+
+	// Icon per content type, shown to the left of each item in the unified list.
+	function iconFor(type: string) {
+		return type === "resource"
+			? "paperclip"
+			: type === "exercise"
+				? "edit"
+				: type === "exam"
+					? "clipboard"
+					: type === "summary"
+						? "list"
+						: "book" // lecture / default
+	}
 
 	const keywords = $derived(
 		(() => {
@@ -46,6 +61,7 @@
 					{data.node.description}
 				</p>{/if}
 		</header>
+			<Authors authors={data.authors} />
 
 		{#if data.html}
 			<div class="md-content">
@@ -66,31 +82,21 @@
 				{/each}
 			</div>
 		{/if}
-		{#if data.groups.lectures.length}
-			<h2 class="section">{t(data.lang, "course.lectures")}</h2>
+		{#if data.groups.contents.length}
+			<h2 class="section">{t(data.lang, "course.contents")}</h2>
 			<ol class="list">
-				{#each data.groups.lectures as n}
+				{#each data.groups.contents as n}
 					<li>
 						<a class="list-link" href={n.url}>
-							<span class="lt">{n.title}</span>
-							<span class="ld">{n.description}</span>
+							<span class="list-head">
+								<span class="lt">{n.title}</span>
+								<span class="list-icon"><Icon name={iconFor(n.type)} size={18} /></span>
+							</span>
+							{#if n.description}<span class="ld">{n.description}</span>{/if}
 						</a>
 					</li>
 				{/each}
 			</ol>
-		{/if}
-		{#if data.groups.resources.length}
-			<h2 class="section">{t(data.lang, "course.resources")}</h2>
-			<ul class="list">
-				{#each data.groups.resources as n}
-					<li>
-						<a class="list-link" href={n.url}>
-							<span class="lt">{n.title}</span>
-							<span class="ld">{n.description}</span>
-						</a>
-					</li>
-				{/each}
-			</ul>
 		{/if}
 
 		<NoteNav prev={data.prev} next={data.next} lang={data.lang} />
@@ -107,6 +113,7 @@
 					</p>{/if}
 			</div>
 		</header>
+			<Authors authors={data.authors} />
 
 		<div class="md-content">
 			{#if data.toc.length}<Toc items={data.toc} lang={data.lang} />{/if}
@@ -137,10 +144,13 @@
 		padding: 0;
 		margin: 0;
 	}
-	/* The whole card is the link (not just the title). */
+	/* The whole card is the link (not just the title). Icon + title on the top
+	   row, description below spanning the full width. */
 	.list-link {
-		display: block;
-		padding: 0.6rem 0.9rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		padding: 0.6rem 0.6rem 0.6rem 1.2rem;
 		border-radius: 0.5rem;
 		background: color-mix(in srgb, var(--secondary) 50%, transparent);
 		box-shadow: 0 1px 3px var(--shadow-color);
@@ -153,6 +163,25 @@
 		background: color-mix(in srgb, var(--secondary) 95%, transparent);
 		box-shadow: 0 6px 18px var(--shadow-color);
 	}
+	.list-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.6rem;
+		min-width: 0;
+	}
+	/* Type icon, beside the title. */
+	.list-icon {
+		flex: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 0.5rem;
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		color: var(--accent);
+	}
 	.lt {
 		display: block;
 		font-weight: 600;
@@ -162,7 +191,6 @@
 		display: block;
 		color: var(--muted);
 		font-size: 0.95rem;
-		margin-top: 0.15rem;
 	}
 
 	@media screen and (max-width: 768px) {
