@@ -33,12 +33,12 @@ describe('buildTree', () => {
     expect(getNodeByPath(root, ['bdd', 'attachments'])).toBeNull();
   });
 
-  it('groups children into modules / lectures / resources', () => {
+  it('groups children into modules and notes kept in order', () => {
     const fisica = getNodeByPath(root, ['fisica']) as any;
     const g = groupChildren(fisica);
     expect(g.modules).toEqual([]);
-    expect(g.lectures.map((n: any) => n.slug)).toEqual(['intro']);
-    expect(g.resources.map((n: any) => n.slug)).toEqual(['formulario']);
+    // lecture (01-intro) and resource (90-formulario) interleaved in prefix order
+    expect(g.notes.map((n: any) => n.slug)).toEqual(['intro', 'formulario']);
   });
 
   it('nests modules and lists every route prefix-stripped', () => {

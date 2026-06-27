@@ -101,5 +101,5 @@ function stripBody(f: any) { return { ...f, content: '', children: undefined }; 
 function prefixGroups(g: any, lang: string, resolve: Context['resolve']) {
   const map = (n: any) => ({ slug: n.slug, title: n.title, description: n.description,
     image: n.image ? resolve.asset(n.image) : undefined, type: n.type, url: `/${lang}/${n.path}` });
-  return { modules: g.modules.map(map), lectures: g.lectures.map(map), resources: g.resources.map(map) };
+  return { modules: g.modules.map(map), contents: g.notes.map(map) };
 }

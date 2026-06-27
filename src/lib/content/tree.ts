@@ -106,12 +106,12 @@ export function getNodeByPath(root: FolderNode, segments: string[]): ContentNode
 }
 
 export function groupChildren(folder: FolderNode) {
-  const modules = folder.children.filter((c): c is FolderNode => c.kind === 'folder');
-  const notes = folder.children.filter((c): c is NoteNode => c.kind === 'note');
+  // `notes` keeps the folder's natural order (by prefix/order) — lectures and
+  // resources interleaved — so the page can show one ordered list with a
+  // per-type icon instead of separate sections.
   return {
-    modules,
-    lectures: notes.filter((n) => n.type === 'lecture'),
-    resources: notes.filter((n) => n.type !== 'lecture')
+    modules: folder.children.filter((c): c is FolderNode => c.kind === 'folder'),
+    notes: folder.children.filter((c): c is NoteNode => c.kind === 'note')
   };
 }
 
