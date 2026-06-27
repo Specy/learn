@@ -88,11 +88,11 @@
 				{#each data.groups.contents as n}
 					<li>
 						<a class="list-link" href={n.url}>
-							<span class="list-icon"><Icon name={iconFor(n.type)} size={18} /></span>
-							<span class="list-text">
+							<span class="list-head">
+								<span class="list-icon"><Icon name={iconFor(n.type)} size={18} /></span>
 								<span class="lt">{n.title}</span>
-								<span class="ld">{n.description}</span>
 							</span>
+							{#if n.description}<span class="ld">{n.description}</span>{/if}
 						</a>
 					</li>
 				{/each}
@@ -144,11 +144,12 @@
 		padding: 0;
 		margin: 0;
 	}
-	/* The whole card is the link (not just the title). */
+	/* The whole card is the link (not just the title). Icon + title on the top
+	   row, description below spanning the full width. */
 	.list-link {
 		display: flex;
-		align-items: center;
-		gap: 0.8rem;
+		flex-direction: column;
+		gap: 0.3rem;
 		padding: 0.6rem 0.9rem;
 		border-radius: 0.5rem;
 		background: color-mix(in srgb, var(--secondary) 50%, transparent);
@@ -162,7 +163,13 @@
 		background: color-mix(in srgb, var(--secondary) 95%, transparent);
 		box-shadow: 0 6px 18px var(--shadow-color);
 	}
-	/* Type icon on the left of each content item. */
+	.list-head {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		min-width: 0;
+	}
+	/* Type icon, beside the title. */
 	.list-icon {
 		flex: none;
 		display: flex;
@@ -174,9 +181,6 @@
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: var(--accent);
 	}
-	.list-text {
-		min-width: 0;
-	}
 	.lt {
 		display: block;
 		font-weight: 600;
@@ -186,7 +190,6 @@
 		display: block;
 		color: var(--muted);
 		font-size: 0.95rem;
-		margin-top: 0.15rem;
 	}
 
 	@media screen and (max-width: 768px) {
