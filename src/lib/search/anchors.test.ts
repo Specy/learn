@@ -7,7 +7,6 @@
 // actual markdown processor and compares.
 import { describe, it, expect } from 'vitest';
 import { renderMarkdown } from '$lib/content/markdown';
-import { extractToc } from '$lib/content/context';
 import { splitSections } from '../../../scripts/searchIndex.mjs';
 
 const noop = {
@@ -36,12 +35,12 @@ const SAMPLE = [
 ].join('\n');
 
 describe('section anchors match the render pipeline', () => {
-  it('splitSections anchors equal rehype-slug heading ids (h2-h4)', async () => {
+  it('splitSections anchors equal rehype-slug heading ids (h1-h4)', async () => {
     const html = await renderMarkdown(SAMPLE, noop);
-    const tocIds = extractToc(html).map((t) => t.id);
+    const htmlIds = [...html.matchAll(/<h([1-4])[^>]*\bid="([^"]+)"/g)].map((m) => m[2]);
     const sectionAnchors = splitSections(SAMPLE)
       .filter((s: { heading: string | null }) => s.heading !== null)
       .map((s: { anchor: string }) => s.anchor);
-    expect(sectionAnchors).toEqual(tocIds);
+    expect(sectionAnchors).toEqual(htmlIds);
   });
 });

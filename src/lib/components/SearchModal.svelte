@@ -217,7 +217,6 @@
     position: fixed;
     inset: 0;
     background: rgba(8, 9, 13, 0.45);
-    backdrop-filter: blur(2px);
     z-index: 200;
   }
   .spotlight-wrap {
@@ -232,13 +231,14 @@
   }
   /* Same glass language as the menu toggle, scaled up for a spotlight panel. */
   .spotlight {
+    font-family: var(--heading-font), sans-serif;
     pointer-events: auto;
     width: min(92vw, 42rem);
     max-height: 72vh;
     display: flex;
     flex-direction: column;
-    background: #52537a1a;
-    backdrop-filter: blur(20px);
+    background: var(--glass-1);
+    backdrop-filter: blur(0.8rem);
     border: 1px solid var(--accent2);
     box-shadow: 0 16px 48px var(--shadow-color);
     border-radius: 1rem;
@@ -300,16 +300,10 @@
     cursor: pointer;
     border: 1px solid transparent;
   }
+  /* Neutral selection highlight — accent colour lives only on the scope pill,
+     not on the row. File vs section is conveyed by the icon + bold title. */
   .result.selected {
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
-  }
-  /* File-name hits read differently from in-page section hits. */
-  .result.is-file {
-    background: color-mix(in srgb, var(--accent) 7%, transparent);
-  }
-  .result.is-file.selected {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    background: color-mix(in srgb, var(--background-text) 12%, transparent);
   }
 
   .r-icon {
@@ -415,7 +409,7 @@
     text-align: center;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     .spotlight-wrap {
       padding: 8vh 0.6rem 1rem;
     }

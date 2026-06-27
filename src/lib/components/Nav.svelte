@@ -21,12 +21,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 1.5rem 1.5rem 5rem;
+    padding: 1.5rem 1.5rem 1.5rem 8.5rem;
   }
 
-  @media (max-width: 1200px) {
+  @media (max-width: 768px) {
     .nav {
-      padding: 1rem 1rem 1rem 4rem;
+      padding: 1rem 1rem 1rem 7.5rem;
     }
   }
 

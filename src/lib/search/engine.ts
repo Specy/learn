@@ -52,9 +52,10 @@ export function runSearch(
 ): SearchResult[] {
   const pattern = toPattern(query);
   if (!pattern) return [];
-  // Pull more candidates than `limit` so context reranking + per-note dedup
-  // have material to work with.
-  const hits = fuse.search(pattern, { limit: 50 });
+  // No Fuse limit: context reranking (esp. the current-lecture boost) must see
+  // every match, or a current-page hit with a slightly worse raw score than N
+  // matches elsewhere would be cut before it can be boosted. rerank caps output.
+  const hits = fuse.search(pattern);
   const inputs: RankInput[] = hits.map((h) => ({
     item: h.item,
     score: h.score ?? 1,
