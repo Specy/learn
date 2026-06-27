@@ -1,0 +1,38 @@
+name: Bump notes submodule
+
+# Fired by the notes (content) repo whenever it pushes to main — see
+# Specy/notes/.github/workflows/notify-app.yml. Also runnable manually.
+on:
+  repository_dispatch:
+    types: [content-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-notes-submodule
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Update notes submodule to latest tracked branch
+        run: git submodule update --remote notes
+
+      - name: Commit and push if the pointer moved
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add notes
+          if git diff --staged --quiet; then
+            echo "notes submodule already up to date — nothing to do"
+          else
+            git commit -m "chore: bump notes submodule"
+            git push
+          fi

@@ -1,3 +1,4 @@
 [submodule "notes"]
 	path = notes
 	url = https://github.com/Specy/notes
+	branch = main
