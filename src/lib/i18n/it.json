@@ -17,5 +17,9 @@
   "search.hint": "↑↓ per spostarti · Invio per aprire · Esc per chiudere",
   "offline.title": "Sei offline",
   "offline.body": "Questa pagina non è ancora stata aperta. Torna online per visualizzarla.",
-  "offline.retry": "Riprova"
+  "offline.retry": "Riprova",
+  "footer.donate": "Donazioni",
+  "footer.repoApp": "Sito su GitHub",
+  "footer.repoNotes": "Appunti su GitHub",
+  "footer.edit": "Modifica questa pagina"
 }

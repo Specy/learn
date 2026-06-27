@@ -17,5 +17,9 @@
   "search.hint": "↑↓ to move · Enter to open · Esc to close",
   "offline.title": "You're offline",
   "offline.body": "This page hasn't been opened yet. Reconnect to view it.",
-  "offline.retry": "Retry"
+  "offline.retry": "Retry",
+  "footer.donate": "Donate",
+  "footer.repoApp": "Website on GitHub",
+  "footer.repoNotes": "Notes on GitHub",
+  "footer.edit": "Edit this page"
 }

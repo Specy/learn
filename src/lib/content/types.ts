@@ -9,6 +9,7 @@ export interface NoteNode {
   kind: 'note';
   slug: string;                            // prefix-stripped, no ext
   path: string;                            // full url path, e.g. 'fisica/intro'
+  relPath: string;                         // source path in the vault, e.g. '02-fisica/01-intro.md'
   order: number;
   title: string;
   description: string;
@@ -21,6 +22,7 @@ export interface FolderNode {
   kind: 'folder';
   slug: string;
   path: string;
+  relPath?: string;                        // source index.md path (undefined for the synthetic root)
   order: number;
   title: string;
   description: string;
