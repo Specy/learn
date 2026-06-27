@@ -9,23 +9,39 @@
   import PageTransition from '$lib/components/PageTransition.svelte';
   import Sidebar from '$lib/components/Sidebar.svelte';
   import Icon from '$lib/components/Icon.svelte';
+  import SearchModal from '$lib/components/SearchModal.svelte';
+  import { t } from '$lib/i18n';
+  import { searchClient } from '$lib/search/searchClient.svelte';
 
   let { children } = $props();
   let sidebarOpen = $state(false);
+  let searchOpen = $state(false);
 
   // Derive current language
   const lang = $derived(page.url.pathname.split('/').filter(Boolean)[0] ?? 'it');
 
-  // Close sidebar when navigating to a new path
+  // Close overlays when navigating to a new path
   $effect(() => {
     const _path = page.url.pathname;
     sidebarOpen = false;
+    searchOpen = false;
   });
+
+  function onWindowKeydown(e: KeyboardEvent) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      searchOpen = !searchOpen;
+    }
+  }
 
   onMount(() => {
     hydrateTheme();
+    // Warm the search index on visit so the first search is instant.
+    searchClient.sync().catch(() => {});
   });
 </script>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 <Background>
   <button
@@ -37,7 +53,16 @@
     <Icon name={sidebarOpen ? 'x' : 'menu'} size={22} />
   </button>
 
+  <button
+    class="search-toggle"
+    onclick={() => (searchOpen = true)}
+    aria-label={t(lang, 'search.button')}
+  >
+    <Icon name="search" size={20} />
+  </button>
+
   <Sidebar bind:open={sidebarOpen} {lang} />
+  <SearchModal bind:open={searchOpen} {lang} />
 
   <Nav />
   <PageTransition>
@@ -46,9 +71,9 @@
 </Background>
 
 <style>
-  .menu-toggle {
+  .menu-toggle,
+  .search-toggle {
     position: fixed;
-    left: 1.5rem;
     top: 1.5rem;
     width: 2.5rem;
     height: 2.5rem;
@@ -67,14 +92,28 @@
     padding: 0;
   }
 
-  .menu-toggle:hover {
+  .menu-toggle {
+    left: 1.5rem;
+  }
+  .search-toggle {
+    left: 4.5rem;
+  }
+
+  .menu-toggle:hover,
+  .search-toggle:hover {
     background: #52537a33;
   }
 
   @media (max-width: 1200px) {
+    .menu-toggle,
+    .search-toggle {
+      top: 1rem;
+    }
     .menu-toggle {
       left: 1rem;
-      top: 1rem;
+    }
+    .search-toggle {
+      left: 4rem;
     }
   }
 </style>

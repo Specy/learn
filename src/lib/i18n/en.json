@@ -6,5 +6,16 @@
   "note.prev": "Previous",
   "note.next": "Next",
   "note.toc": "Contents",
-  "home.subtitle": "Computer-science course notes, browsable by subject."
+  "home.subtitle": "Computer-science course notes, browsable by subject.",
+  "search.button": "Search",
+  "search.placeholder": "Search all courses…",
+  "search.empty": "Start typing to search",
+  "search.noResults": "No results",
+  "search.unavailable": "Search unavailable",
+  "search.scope.current": "this page",
+  "search.scope.course": "this course",
+  "search.hint": "↑↓ to move · Enter to open · Esc to close",
+  "offline.title": "You're offline",
+  "offline.body": "This page hasn't been opened yet. Reconnect to view it.",
+  "offline.retry": "Retry"
 }

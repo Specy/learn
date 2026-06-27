@@ -217,5 +217,25 @@ Scope chip (right):
 
 - Index via Vite plugin (dev+build), not a prebuild script — keeps `vite dev`
   working with no extra wiring.
-- `compressToBase64` (ASCII-safe fetchable body).
-- Debounce 120ms; 10 results max; cap 2 sections/note except the current file.
+- 10 results max; cap 2 sections/note except the current file.
+
+## As-built deltas (refinements during implementation)
+
+- **Compression:** native gzip instead of lz-string. Build gzips the whole JSON
+  array with `node:zlib`; the runtime inflates with `DecompressionStream('gzip')`.
+  Resource is **`/search-index.bin`** (binary, `application/octet-stream`), not
+  text JSON. Whole-array compression (one blob) → 305 KB vs 1.17 MB raw. lz-string
+  stays a dependency only for the Excalidraw reader.
+- **Search trigger:** throttled (~80 ms leading+trailing, live as you type), not
+  debounced.
+- **UI:** macOS-Spotlight-style centred palette using the same glass language as
+  the menu toggle (`#52537a1a` + `backdrop-filter: blur` + `--accent2` border).
+  The search button reuses the menu-toggle glass.
+- **Ranking:** Fuse scores cluster at ~0 for a note + all its sections on a name
+  match, so adjusted scores are bucketed (×1000, rounded); within a bucket the
+  order is scope (current ≪ same-course ≪ other) → file-before-section → raw
+  score → id. Net effect: a file-name match leads (jump to file), content
+  matches jump to the heading.
+- **Scope chips:** current → `--accent`; same-course → `--accent2`; other →
+  `--tertiary` (with the course title). `--accent2`/`--tertiary` are dark in both
+  themes, so chip text is fixed light (not `--background-text`).
