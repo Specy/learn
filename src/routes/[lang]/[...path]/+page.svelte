@@ -7,6 +7,7 @@
 	import { t } from "$lib/i18n"
 	import RenderedMarkdown from "$lib/components/RenderedMarkdown.svelte"
 	import SEO from "$lib/components/SEO.svelte"
+	import Authors from "$lib/components/Authors.svelte"
 
 	let { data }: PageProps = $props()
 
@@ -46,6 +47,7 @@
 					{data.node.description}
 				</p>{/if}
 		</header>
+			<Authors authors={data.authors} />
 
 		{#if data.html}
 			<div class="md-content">
@@ -107,6 +109,7 @@
 					</p>{/if}
 			</div>
 		</header>
+			<Authors authors={data.authors} />
 
 		<div class="md-content">
 			{#if data.toc.length}<Toc items={data.toc} lang={data.lang} />{/if}
