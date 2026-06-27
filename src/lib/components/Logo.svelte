@@ -74,7 +74,7 @@
     height: 0.8rem;
     margin-top: -0.4rem;
   }
-  @media (max-width: 650px) {
+  @media (max-width: 768px) {
     .logo {
       width: 2.1rem;
       height: 2.1rem;

@@ -27,6 +27,11 @@ a {
   --background-text: #d4d4d4;
   --shadow-color: rgba(0, 0, 0, 0.4);
   --muted: #8a91a0;
+  /* Frosted-glass surface tint (ascending opacity). Theme store keeps these in
+     sync; dark base #52537a, light base #fff — see theme.svelte.ts. */
+  --glass-1: color-mix(in srgb, #52537a 4%, transparent);
+  --glass-2: color-mix(in srgb, #52537a 10%, transparent);
+  --glass-3: color-mix(in srgb, #52537a 20%, transparent);
   /* Semi-transparent card behind article text so the blurred blobs don't
      disturb readability (specy.app `.md-content` uses rgba(23,26,33,0.67)). */
   --md-bg: rgba(23, 26, 33, 0.67);
@@ -41,8 +46,11 @@ a {
 /* Light-theme overrides for the non-JS-managed vars (the theme store only sets
    the palette vars; these derive from the theme here). */
 html[data-theme='light'] {
-  --muted: #6c757d;
-  --md-bg: rgba(250, 250, 250, 0.72);
+  --muted: #3d4246;
+  --md-bg: rgba(250, 250, 250, 0.42);
+  --glass-1: color-mix(in srgb, #ffffff 55%, transparent);
+  --glass-2: color-mix(in srgb, #ffffff 70%, transparent);
+  --glass-3: color-mix(in srgb, #ffffff 85%, transparent);
 }
 
 /* ─── Base body ──────────────────────────────────────────────────────────── */
@@ -59,7 +67,7 @@ body {
    the CONTAINER look (translucent bg, padding, radius) matches specy.app's
    prism-one-dark.css so it reads the same on both themes.                     */
 .shiki {
-  background: #52537a1a !important;
+  background: color-mix(in srgb, var(--tertiary) 10%, transparent) !important;
   /* beats Shiki's inline bg; subtle on both themes */
   padding: 0.8em 1em;
   margin: 1.3rem 0;
@@ -113,7 +121,7 @@ html[data-theme="dark"] .excalidraw-dark {
   border-left: 0.3rem solid var(--accent);
   padding: 0.7rem 1rem;
   border-radius: 0.3rem 0.8rem 0.8rem 0.3rem;
-  background: #52537a1a;
+  background: color-mix(in srgb, var(--tertiary) 10%, transparent);
   /* same translucent surface as code blocks */
   margin: 1rem 0;
 }
@@ -333,7 +341,7 @@ html[data-theme="dark"] .excalidraw-dark {
   border-radius: 0.3rem 0.8rem 0.8rem 0.3rem;
   padding: 0.7rem 1rem;
   border-left: 0.3rem solid var(--accent);
-  background: #52537a1a;
+  background: color-mix(in srgb, var(--tertiary) 10%, transparent);
   margin: 1rem 0;
 }
 
@@ -365,7 +373,7 @@ html[data-theme="dark"] .excalidraw-dark {
   border-spacing: 0;
   margin: 1.5rem auto;
   font-size: 1rem;
-  background: #52537a1a;
+  background: color-mix(in srgb, var(--tertiary) 10%, transparent);
   border: 1px solid var(--accent2);
   /* outer border */
   border-radius: 0.5rem;
@@ -476,7 +484,7 @@ html[data-theme="dark"] .excalidraw-dark {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .main-header {
     font-size: 2.3rem;
   }

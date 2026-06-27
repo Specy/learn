@@ -33,7 +33,7 @@ describe('mdToText', () => {
 });
 
 describe('splitSections', () => {
-  it('produces an intro section then one per h2-h4, with github-slugger anchors', () => {
+  it('produces one section per h1-h4 heading, with github-slugger anchors', () => {
     const md = [
       '# Lecture Title',
       'intro paragraph',
@@ -45,18 +45,24 @@ describe('splitSections', () => {
       'body c'
     ].join('\n');
     const secs = splitSections(md);
-    // intro + 3 headed sections
+    // h1 is now a section (many notes use # for real sections)
     expect(secs.map((s) => s.heading)).toEqual([
-      null,
+      'Lecture Title',
       'Tipi di successioni',
       'Sub heading',
       'Forme indeterminate'
     ]);
+    expect(secs[0].anchor).toBe('lecture-title');
+    expect(secs[0].text).toContain('intro paragraph');
     expect(secs[1].anchor).toBe('tipi-di-successioni');
     expect(secs[2].anchor).toBe('sub-heading');
-    // intro keeps the h1 title text + intro paragraph as searchable body
-    expect(secs[0].anchor).toBe('');
-    expect(secs[0].text).toContain('intro paragraph');
+  });
+
+  it('keeps content before the first heading as a null-heading intro section', () => {
+    const secs = splitSections('lead text here\n\n## First\nbody');
+    expect(secs[0].heading).toBe(null);
+    expect(secs[0].text).toContain('lead text here');
+    expect(secs[1].heading).toBe('First');
   });
 
   it('matches rehype-slug duplicate-suffix behaviour via a shared slugger', () => {
@@ -65,16 +71,11 @@ describe('splitSections', () => {
     expect(secs.map((s) => s.anchor)).toEqual(['foo', 'foo-1', 'foo-2']);
   });
 
-  it('keeps the slugger counter in sync across h1/h5/h6 headings', () => {
-    // The h1 "Foo" consumes `foo`, so the first h2 "Foo" must become `foo-1`,
+  it('keeps the slugger counter in sync across heading levels (h1 included)', () => {
+    // The h1 "Foo" consumes `foo`, so the h2 "Foo" must become `foo-1`,
     // exactly as rehype-slug (which ids every heading) would render it.
-    const md = '# Foo\n## Foo\nbody';
-    const ref = new GithubSlugger();
-    ref.slug('Foo'); // h1
-    const expected = ref.slug('Foo'); // h2 -> foo-1
-    const sec = splitSections(md).find((s) => s.heading === 'Foo');
-    expect(sec.anchor).toBe(expected);
-    expect(sec.anchor).toBe('foo-1');
+    const secs = splitSections('# Foo\n## Foo\nbody').filter((s) => s.heading);
+    expect(secs.map((s) => s.anchor)).toEqual(['foo', 'foo-1']);
   });
 
   it('does not treat # inside code fences as headings', () => {
@@ -95,23 +96,45 @@ describe('buildSearchIndex', () => {
   const files = [
     { relPath: '01-analisi/index.md', frontmatter: { title: 'Analisi Matematica' }, content: '# Analisi' },
     {
+      // leading "# Serie e Successioni" repeats the title -> folds into the file entry
       relPath: '01-analisi/01-serie.md',
       frontmatter: { title: 'Serie e Successioni', description: 'Criteri di convergenza' },
-      content: '# Serie\nintro\n## Tipi di successioni\nuna successione\n## Convergenza\nassoluta'
+      content: '# Serie e Successioni\nintro\n## Tipi di successioni\nuna successione\n## Convergenza\nassoluta'
     },
     {
+      // h1-structured note (no title repeat): h1 headings must become sections
       relPath: '02-fisica/01-intro.md',
       frontmatter: { title: 'Introduzione' },
-      content: '## Termodinamica\ncalore'
+      content: '# Termodinamica\ncalore\n# Cinematica\nmoto'
     }
   ];
 
-  it('emits a file entry per note plus a section entry per heading', () => {
+  it('emits a file entry per note and a section per h1-h4 heading', () => {
     const entries = buildSearchIndex(files);
-    const files_ = entries.filter((e) => e.kind === 'file');
+    const fileE = entries.filter((e) => e.kind === 'file');
     const sections = entries.filter((e) => e.kind === 'section');
-    expect(files_.map((e) => e.noteTitle).sort()).toEqual(['Introduzione', 'Serie e Successioni']);
-    expect(sections.map((e) => e.heading).sort()).toEqual(['Convergenza', 'Termodinamica', 'Tipi di successioni']);
+    expect(fileE.map((e) => e.noteTitle).sort()).toEqual(['Introduzione', 'Serie e Successioni']);
+    expect(sections.map((e) => e.heading).sort()).toEqual([
+      'Cinematica',
+      'Convergenza',
+      'Termodinamica',
+      'Tipi di successioni'
+    ]);
+  });
+
+  it('folds a leading title-repeat h1 into the file entry (no redundant section)', () => {
+    const entries = buildSearchIndex(files);
+    expect(entries.some((e) => e.kind === 'section' && e.heading === 'Serie e Successioni')).toBe(false);
+    const serie = entries.find((e) => e.kind === 'file' && e.noteTitle === 'Serie e Successioni');
+    expect(serie.text).toContain('intro'); // folded lead content present
+  });
+
+  it('indexes h1 headings as sections for h1-structured notes', () => {
+    const entries = buildSearchIndex(files);
+    const termo = entries.find((e) => e.kind === 'section' && e.heading === 'Termodinamica');
+    expect(termo).toBeTruthy();
+    expect(termo.notePath).toBe('fisica/intro');
+    expect(termo.anchor).toBe('termodinamica');
   });
 
   it('does not emit index.md as a note', () => {

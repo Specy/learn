@@ -86,7 +86,7 @@
 		left: 0;
 		width: min(95vw, 30rem);
 		z-index: 99;
-		background: color-mix(in srgb, var(--background) 80%, #52537a1a);
+		background: color-mix(in srgb, var(--background) 80%, var(--glass-2));
 		backdrop-filter: blur(8px);
 		border-right: 1px solid var(--accent2);
 		box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);

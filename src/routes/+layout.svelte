@@ -78,7 +78,7 @@
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
-    background: #52537a1a;
+    background: var(--glass-2);
     backdrop-filter: blur(12px);
     border: 1px solid var(--accent2);
     box-shadow: 0 4px 12px var(--shadow-color);
@@ -101,10 +101,10 @@
 
   .menu-toggle:hover,
   .search-toggle:hover {
-    background: #52537a33;
+    background: var(--glass-3);
   }
 
-  @media (max-width: 1200px) {
+  @media (max-width: 768px) {
     .menu-toggle,
     .search-toggle {
       top: 1rem;

@@ -61,10 +61,12 @@ export function mdToText(md) {
  * Split a note body into search sections.
  *
  * Returns the leading intro section ({heading:null, anchor:''}) followed by one
- * section per h2-h4 heading ({heading, anchor}). Every heading (h1-h6) advances
- * a single per-note GithubSlugger so duplicate-heading suffixes (`-1`, `-2`)
- * match rehype-slug exactly; h1/h5/h6 fold into the surrounding section.
- * Sections with no heading and no text are dropped.
+ * section per h1-h4 heading ({heading, anchor}). Many vault notes use `#` (h1)
+ * for their actual sections, so h1 must be indexed (a leading title-repeat h1 is
+ * folded into the file entry later, in buildSearchIndex). Every heading (h1-h6)
+ * advances a single per-note GithubSlugger so duplicate-heading suffixes
+ * (`-1`, `-2`) match rehype-slug exactly; h5/h6 fold into the surrounding
+ * section. Sections with no heading and no text are dropped.
  */
 export function splitSections(md) {
   const slugger = new GithubSlugger();
@@ -84,12 +86,12 @@ export function splitSections(md) {
       const depth = h[1].length;
       const text = inlineText(h[2]);
       const anchor = slugger.slug(text); // advance for ALL headings
-      if (depth >= 2 && depth <= 4) {
+      if (depth >= 1 && depth <= 4) {
         sections.push(current);
         current = { heading: text, anchor, lines: [] };
         continue;
       }
-      // h1 (title) / h5 / h6: keep as body of the current section.
+      // h5 / h6: keep as body of the current section.
       current.lines.push(line);
     } else {
       current.lines.push(line);
@@ -142,6 +144,17 @@ export function buildSearchIndex(files) {
 
     const sections = splitSections(f.content || '');
     const intro = sections.find((s) => s.heading === null);
+    const headed = sections.filter((s) => s.heading !== null);
+
+    // Fold a leading "# <Note Title>" heading (a title repeat) into the file
+    // entry rather than emitting a redundant section for it.
+    const norm = (x) => x.trim().toLowerCase();
+    let introText = intro ? intro.text : '';
+    let startIdx = 0;
+    if (headed.length && norm(headed[0].heading) === norm(noteTitle)) {
+      introText = [introText, headed[0].text].filter(Boolean).join(' ');
+      startIdx = 1;
+    }
 
     // One `file` entry: matched on title/filename + description + intro text.
     entries.push({
@@ -153,14 +166,14 @@ export function buildSearchIndex(files) {
       noteTitle,
       heading: null,
       anchor: '',
-      text: [noteTitle, segs[segs.length - 1].replace(/-/g, ' '), description, intro ? intro.text : '']
+      text: [noteTitle, segs[segs.length - 1].replace(/-/g, ' '), description, introText]
         .filter(Boolean)
         .join(' — ')
     });
 
-    // One `section` entry per h2-h4 heading.
-    for (const s of sections) {
-      if (s.heading === null) continue;
+    // One `section` entry per h1-h4 heading (minus the folded title heading).
+    for (let i = startIdx; i < headed.length; i++) {
+      const s = headed[i];
       entries.push({
         id: id++,
         kind: 'section',
