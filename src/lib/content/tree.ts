@@ -34,6 +34,7 @@ export function buildTree(files: RawFile[]): FolderNode {
     }
 
     if (stripMdExt(fileName) === 'index') {
+      cursor.relPath = file.relPath;
       cursor.title = file.frontmatter.title ?? cursor.slug;
       cursor.description = file.frontmatter.description ?? '';
       cursor.image = file.frontmatter.image;
@@ -46,6 +47,7 @@ export function buildTree(files: RawFile[]): FolderNode {
       const note: NoteNode = {
         kind: 'note', slug,
         path: [...urlSegs, slug].join('/'),
+        relPath: file.relPath,
         order: file.frontmatter.order ?? order ?? BIG,
         title: file.frontmatter.title ?? slug,
         description: file.frontmatter.description ?? '',

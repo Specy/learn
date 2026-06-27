@@ -10,6 +10,7 @@
   import Sidebar from '$lib/components/Sidebar.svelte';
   import Icon from '$lib/components/Icon.svelte';
   import SearchModal from '$lib/components/SearchModal.svelte';
+  import Footer from '$lib/components/Footer.svelte';
   import { t } from '$lib/i18n';
   import { searchClient } from '$lib/search/searchClient.svelte';
 
@@ -74,6 +75,7 @@
   <PageTransition>
     {@render children?.()}
   </PageTransition>
+  <Footer />
 </Background>
 
 <style>
