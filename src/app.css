@@ -470,7 +470,7 @@ html[data-theme="dark"] .excalidraw-dark {
 
 .main-header {
   font-family: var(--heading-font), sans-serif;
-  font-size: 3.2rem;
+  font-size: 3rem;
   font-weight: 800;
   line-height: 1.1;
   margin: 0;
