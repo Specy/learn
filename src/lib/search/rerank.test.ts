@@ -140,7 +140,7 @@ describe('makeSnippet', () => {
     });
   });
 
-  it('centres a balanced window on the matched range and isolates the hit', () => {
+  it('positions the match about a third in, with more context after', () => {
     const long = 'a'.repeat(200) + ' TARGET ' + 'b'.repeat(200);
     const start = 201; // 'T'
     const end = 206; //   'T' of TARGET (inclusive)
@@ -148,13 +148,13 @@ describe('makeSnippet', () => {
       { key: 'text', value: long, indices: [[start, end]] }
     ]);
     expect(s.hit).toBe('TARGET'); // correct alignment: exact matched substring
-    expect(s.before.length).toBeGreaterThan(0);
-    expect(s.after.length).toBeGreaterThan(0);
-    // balanced context on both sides (centred)
-    expect(Math.abs(s.before.length - s.after.length)).toBeLessThan(4);
+    expect(s.before.startsWith('…')).toBe(true);
+    expect(s.after.endsWith('…')).toBe(true);
+    // match sits ~1/3 in → more context after than before
+    expect(s.after.length).toBeGreaterThan(s.before.length);
   });
 
-  it('centres on the LONGEST matched range, not the first', () => {
+  it('selects the LONGEST matched range, not the first', () => {
     const text = 'xx ab yy abcdef zz';
     const s = makeSnippet(entry({ id: 1, text }), [
       { key: 'text', value: text, indices: [[3, 4], [9, 14]] }
@@ -167,6 +167,7 @@ describe('makeSnippet', () => {
     const s = makeSnippet(entry({ id: 1, text: long }));
     expect(s.hit).toBe('');
     expect(s.before).toBe('');
-    expect(s.after.length).toBeLessThanOrEqual(140);
+    expect(s.after.endsWith('…')).toBe(true);
+    expect(s.after.length).toBeLessThanOrEqual(141);
   });
 });

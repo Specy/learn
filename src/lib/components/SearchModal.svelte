@@ -230,14 +230,11 @@
 											<span class="r-heading">{r.heading}</span>
 										</span>
 										{#if r.snippet.hit || r.snippet.after || r.snippet.before}
-											<span class="r-snippet">
-												{#if r.snippet.before}<span class="s-before"
-														><bdi>{r.snippet.before}</bdi></span
-													>{/if}{#if r.snippet.hit}<mark>{r.snippet.hit}</mark
-													>{/if}{#if r.snippet.after}<span class="s-after"
-														>{r.snippet.after}</span
-													>{/if}
-											</span>
+											<span class="r-snippet"
+												>{r.snippet.before}{#if r.snippet.hit}<mark
+														>{r.snippet.hit}</mark
+													>{/if}{r.snippet.after}</span
+											>
 										{/if}
 									{/if}
 								</span>
@@ -412,36 +409,17 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	/* Snippet keeps the matched text centred and always visible: before/after
-	   share the remaining width and ellipsize toward the match (before clips at
-	   its start via dir=rtl + <bdi>, after clips at its end). */
+	/* Plain inline snippet: the match sits ~1/3 in (set in makeSnippet) and the
+	   line clips at its end — no flex gaps. The matched text is highlighted. */
 	.r-snippet {
-		display: flex;
-		align-items: baseline;
-		min-width: 0;
 		color: var(--muted);
 		font-size: 0.85rem;
-		line-height: 1.3;
-	}
-	.s-before,
-	.s-after {
-		flex: 1 1 0;
-		min-width: 0;
-		overflow: hidden;
 		white-space: nowrap;
+		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-	.s-before {
-		direction: rtl;
-		text-align: left;
 	}
 	.r-snippet mark {
-		flex: 0 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		background: color-mix(in srgb, var(--accent) 22%, transparent);
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
 		color: var(--background-text);
 		border-radius: 0.2rem;
 		padding: 0 0.15rem;

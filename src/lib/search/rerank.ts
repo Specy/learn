@@ -43,11 +43,13 @@ function clip(s: string): string {
 }
 
 /**
- * Build a preview snippet split around the matched text. Centres on the longest
- * matched range from Fuse (the most significant "item that caused the match") so
- * the UI can show it with balanced context on both sides and highlight it.
- * Slices the ORIGINAL matched value by Fuse's indices first, then collapses
- * whitespace per-piece — collapsing first would shift the indices.
+ * Build a preview snippet split around the matched text. Positions the match
+ * about a third in from the left (more context after than before) and fills the
+ * rest with following text, so the snippet reads as plain inline text with no
+ * gaps. Centres on the longest matched range from Fuse (the most significant
+ * "item that caused the match"). Slices the ORIGINAL matched value by Fuse's
+ * indices first, then collapses whitespace per-piece — collapsing first would
+ * shift the indices. `before`/`after` carry their own ellipsis when truncated.
  */
 export function makeSnippet(e: SearchEntry, matches?: RankInput['matches']): SearchSnippet {
   // Prefer a body ('text') match, then a heading match.
@@ -59,19 +61,21 @@ export function makeSnippet(e: SearchEntry, matches?: RankInput['matches']): Sea
   // No precise match range → a plain leading excerpt (nothing to highlight).
   if (!m?.indices?.length) {
     const text = clip(full);
-    return { before: '', hit: '', after: text.length > SNIPPET_LEN ? text.slice(0, SNIPPET_LEN) : text };
+    return { before: '', hit: '', after: text.length > SNIPPET_LEN ? text.slice(0, SNIPPET_LEN) + '…' : text };
   }
 
   // Fuse indices are [start, end] inclusive; pick the longest matched range.
   const [start, end] = m.indices.reduce((a, b) => (b[1] - b[0] > a[1] - a[0] ? b : a));
   const hitLen = end + 1 - start;
-  const ctx = Math.max(0, Math.floor((SNIPPET_LEN - hitLen) / 2));
+  const bStart = Math.max(0, start - Math.floor(SNIPPET_LEN / 3)); // match ~1/3 in
+  const aEnd = Math.min(full.length, end + 1 + Math.max(0, SNIPPET_LEN - (start - bStart) - hitLen));
 
-  return {
-    before: clip(full.slice(Math.max(0, start - ctx), start)),
-    hit: clip(full.slice(start, end + 1)),
-    after: clip(full.slice(end + 1, end + 1 + ctx))
-  };
+  let before = clip(full.slice(bStart, start));
+  const hit = clip(full.slice(start, end + 1));
+  let after = clip(full.slice(end + 1, aEnd));
+  if (bStart > 0) before = '…' + before;
+  if (aEnd < full.length) after = after + '…';
+  return { before, hit, after };
 }
 
 /**
