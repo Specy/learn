@@ -6,5 +6,16 @@
   "note.prev": "Precedente",
   "note.next": "Successivo",
   "note.toc": "Indice",
-  "home.subtitle": "Appunti dei corsi di informatica, navigabili per materia."
+  "home.subtitle": "Appunti dei corsi di informatica, navigabili per materia.",
+  "search.button": "Cerca",
+  "search.placeholder": "Cerca in tutti i corsi…",
+  "search.empty": "Inizia a scrivere per cercare",
+  "search.noResults": "Nessun risultato",
+  "search.unavailable": "Ricerca non disponibile",
+  "search.scope.current": "questa pagina",
+  "search.scope.course": "questo corso",
+  "search.hint": "↑↓ per spostarti · Invio per aprire · Esc per chiudere",
+  "offline.title": "Sei offline",
+  "offline.body": "Questa pagina non è ancora stata aperta. Torna online per visualizzarla.",
+  "offline.retry": "Riprova"
 }

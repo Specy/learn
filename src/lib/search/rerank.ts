@@ -1,0 +1,109 @@
+// src/lib/search/rerank.ts
+// Pure context-aware reranking of Fuse hits. No Fuse import so it stays trivially
+// testable; the worker passes in the Fuse result shape it needs.
+import type { SearchEntry, SearchContext, SearchResult, ResultScope } from './types';
+
+/** Minimal shape of a Fuse result we rely on (score: 0 best .. 1 worst). */
+export interface RankInput {
+  item: SearchEntry;
+  score: number;
+  matches?: ReadonlyArray<{
+    key?: string;
+    value?: string;
+    indices?: ReadonlyArray<readonly [number, number]>;
+  }>;
+}
+
+// Lower = better, so boosts are multipliers < 1.
+const SCOPE_MULT: Record<ResultScope, number> = { current: 0.3, 'same-course': 0.6, other: 1 };
+const SCOPE_RANK: Record<ResultScope, number> = { current: 0, 'same-course': 1, other: 2 };
+const MAX_SECTIONS_PER_OTHER_NOTE = 2;
+const SNIPPET_LEN = 140;
+
+// Fuse scores cluster tightly (an exact title match scores ~0 for a note AND all
+// its sections). Bucket adjusted scores so near-ties are treated as equal and
+// resolved by intent — scope first, then a file-name hit over its sections.
+const bucket = (x: number) => Math.round(x * 1000);
+const kindRank = (k: 'file' | 'section') => (k === 'file' ? 0 : 1);
+
+export function scopeOf(e: SearchEntry, ctx: SearchContext): ResultScope {
+  if (ctx.notePath && e.notePath === ctx.notePath) return 'current';
+  if (ctx.course && e.course === ctx.course) return 'same-course';
+  return 'other';
+}
+
+export function buildUrl(e: SearchEntry, lang: string): string {
+  const l = lang || 'it';
+  const base = `/${l}/${e.notePath}`;
+  return e.anchor ? `${base}#${e.anchor}` : base;
+}
+
+function clip(s: string): string {
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+export function makeSnippet(e: SearchEntry, matches?: RankInput['matches']): string {
+  // Prefer a body ('text') match, then a heading match, to centre the window.
+  const m =
+    matches?.find((x) => x.key === 'text' && x.indices?.length) ??
+    matches?.find((x) => x.key === 'heading' && x.indices?.length);
+  const source = clip((m?.value as string) || e.text || '');
+  if (source.length <= SNIPPET_LEN) return source;
+
+  if (m?.indices?.length) {
+    const [start] = m.indices[0];
+    const from = Math.max(0, start - Math.floor(SNIPPET_LEN / 3));
+    let snip = source.slice(from, from + SNIPPET_LEN);
+    if (from > 0) snip = '…' + snip;
+    if (from + SNIPPET_LEN < source.length) snip = snip + '…';
+    return snip;
+  }
+  return source.slice(0, SNIPPET_LEN) + '…';
+}
+
+/**
+ * Rerank Fuse hits by current-location context, dedupe, and project to results.
+ *
+ * Boost: current note (×0.3) ≪ same course (×0.6) ≪ elsewhere (×1). On the
+ * language home (no course, no note) nothing is boosted. The current note is
+ * never capped (it may surface several matches); every other note contributes
+ * at most two section results so one note can't flood the list.
+ */
+export function rerank(hits: RankInput[], context: SearchContext, limit = 10): SearchResult[] {
+  const ranked = hits.map((h) => {
+    const scope = scopeOf(h.item, context);
+    return { h, scope, adj: h.score * SCOPE_MULT[scope] };
+  });
+
+  ranked.sort(
+    (a, b) =>
+      bucket(a.adj) - bucket(b.adj) ||
+      SCOPE_RANK[a.scope] - SCOPE_RANK[b.scope] ||
+      kindRank(a.h.item.kind) - kindRank(b.h.item.kind) ||
+      a.h.score - b.h.score ||
+      a.h.item.id - b.h.item.id
+  );
+
+  const out: SearchResult[] = [];
+  const otherSectionCount = new Map<string, number>();
+
+  for (const r of ranked) {
+    if (out.length >= limit) break;
+    const e = r.h.item;
+    if (r.scope !== 'current' && e.kind === 'section') {
+      const c = otherSectionCount.get(e.notePath) ?? 0;
+      if (c >= MAX_SECTIONS_PER_OTHER_NOTE) continue;
+      otherSectionCount.set(e.notePath, c + 1);
+    }
+    out.push({
+      kind: e.kind,
+      scope: r.scope,
+      noteTitle: e.noteTitle,
+      courseTitle: e.courseTitle,
+      heading: e.heading,
+      url: buildUrl(e, context.lang),
+      snippet: makeSnippet(e, r.h.matches)
+    });
+  }
+  return out;
+}
