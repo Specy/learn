@@ -5,6 +5,10 @@ import { decodeExcalidrawSentinel, EXCALIDRAW_SENTINEL_PREFIX } from './context'
 
 const WIKILINK = /(!)?\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g;
 
+/** Wikilink labels default to the note title, which can get long — clamp the
+ * visible text (the full label stays in the link's title attribute). */
+const MAX_LABEL = 32;
+
 /** Escape special HTML attribute characters to prevent injection. */
 function escAttr(s: string): string {
   return s
@@ -59,12 +63,14 @@ export default function remarkObsidianLinks(resolve: LinkResolver) {
           }
         } else {
           const trimmedTarget = target.trim();
-          const label = alias ?? resolve.noteLabel?.(trimmedTarget) ?? trimmedTarget;
+          const label = (alias ?? resolve.noteLabel?.(trimmedTarget) ?? trimmedTarget).trim();
+          const display = label.length > MAX_LABEL ? label.slice(0, MAX_LABEL).trimEnd() + '…' : label;
           out.push({
             type: 'link',
             url: resolve.note(trimmedTarget),
-            title: null,
-            children: [{ type: 'text', value: label.trim() }]
+            // Keep the full label reachable on hover only when we truncated it.
+            title: display === label ? null : label,
+            children: [{ type: 'text', value: display }]
           });
         }
         last = m.index + full.length;
