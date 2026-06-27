@@ -17,6 +17,10 @@
   let sidebarOpen = $state(false);
   let searchOpen = $state(false);
 
+  // Keyboard-shortcut hint (Cmd on Apple, Ctrl elsewhere); resolved on mount.
+  let isMac = $state(false);
+  const shortcut = $derived(isMac ? '⌘K' : 'Ctrl K');
+
   // Derive current language
   const lang = $derived(page.url.pathname.split('/').filter(Boolean)[0] ?? 'it');
 
@@ -36,6 +40,7 @@
 
   onMount(() => {
     hydrateTheme();
+    isMac = /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
     // Warm the search index on visit so the first search is instant.
     searchClient.sync().catch(() => {});
   });
@@ -59,6 +64,7 @@
     aria-label={t(lang, 'search.button')}
   >
     <Icon name="search" size={20} />
+    <span class="search-tip">{t(lang, 'search.button')} <kbd>{shortcut}</kbd></span>
   </button>
 
   <Sidebar bind:open={sidebarOpen} {lang} />
@@ -102,6 +108,48 @@
   .menu-toggle:hover,
   .search-toggle:hover {
     background: var(--glass-3);
+  }
+
+  /* Shortcut hint, shown below the search button on hover/focus. */
+  .search-tip {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    padding: 0.3rem 0.55rem;
+    border-radius: 0.5rem;
+    background: var(--secondary);
+    border: 1px solid var(--accent2);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    color: var(--background-text);
+    font-family: var(--heading-font), sans-serif;
+    font-size: 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .search-tip kbd {
+    font-family: var(--code-font), monospace;
+    font-size: 0.68rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.3rem;
+    background: color-mix(in srgb, var(--background-text) 12%, transparent);
+  }
+  .search-toggle:hover .search-tip,
+  .search-toggle:focus-visible .search-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* No hover affordance on touch — hide the tip there. */
+  @media (hover: none) {
+    .search-tip {
+      display: none;
+    }
   }
 
   @media (max-width: 768px) {

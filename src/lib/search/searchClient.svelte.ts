@@ -11,7 +11,7 @@ import type { SearchEntry } from './types';
 export type SearchStatus = 'idle' | 'syncing' | 'ready' | 'error';
 
 const INDEX_URL = `${base}/search-index.bin`;
-const LIMIT = 10;
+const LIMIT = 20;
 
 class SearchClient {
   status = $state<SearchStatus>('idle');
