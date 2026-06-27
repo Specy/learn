@@ -54,14 +54,16 @@
 
 {#if data.kind === "folder"}
 	<article class="article">
-		<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
+		<div class="crumbs-row">
+			<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
+			<Authors authors={data.authors} />
+		</div>
 		<header class="hero">
 			<h1 class="main-header">{data.node.title}</h1>
 			{#if data.node.description}<p class="hero-desc">
 					{data.node.description}
 				</p>{/if}
 		</header>
-			<Authors authors={data.authors} />
 
 		{#if data.html}
 			<div class="md-content">
@@ -103,7 +105,10 @@
 	</article>
 {:else}
 	<article class="article article-lecture">
-		<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
+		<div class="crumbs-row">
+			<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
+			<Authors authors={data.authors} />
+		</div>
 		<header class="hero">
 			<h1 class="main-header">{data.node.title}</h1>
 			<p class="hero-meta">{data.readingText}</p>
@@ -113,7 +118,6 @@
 					</p>{/if}
 			</div>
 		</header>
-			<Authors authors={data.authors} />
 
 		<div class="md-content">
 			{#if data.toc.length}<Toc items={data.toc} lang={data.lang} />{/if}
@@ -125,6 +129,14 @@
 {/if}
 
 <style>
+	/* Breadcrumbs on the left, authors on the right; wraps when tight. */
+	.crumbs-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem 1rem;
+	}
 	.grid {
 		display: grid;
 		gap: 1rem;
