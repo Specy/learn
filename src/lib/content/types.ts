@@ -1,5 +1,11 @@
 export type NoteType = 'lecture' | 'resource' | 'exercise' | 'exam' | 'summary';
 
+export interface Author {
+  name: string;
+  link?: string;   // optional URL opened on click
+  image?: string;  // optional avatar (vault asset basename or absolute URL/path)
+}
+
 export interface RawFile {
   relPath: string;                         // POSIX, e.g. '02-fisica/01-intro.md'
   frontmatter: Record<string, any>;
@@ -15,6 +21,7 @@ export interface NoteNode {
   description: string;
   type: NoteType;
   published: boolean;
+  authors?: Author[];
   content: string;                         // raw markdown body
   frontmatter: Record<string, any>;
 }
@@ -27,6 +34,7 @@ export interface FolderNode {
   title: string;
   description: string;
   image?: string;
+  authors?: Author[];
   published: boolean;
   content: string;                         // index.md body
   children: ContentNode[];
