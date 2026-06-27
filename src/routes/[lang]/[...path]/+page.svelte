@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageProps } from "./$types"
-	import CourseCard from "$lib/components/CourseCard.svelte"
 	import Breadcrumbs from "$lib/components/Breadcrumbs.svelte"
 	import NoteNav from "$lib/components/NoteNav.svelte"
 	import Toc from "$lib/components/Toc.svelte"
@@ -71,30 +70,32 @@
 			</div>
 		{/if}
 
-		{#if data.groups.modules.length}
-			<h2 class="section">{t(data.lang, "course.modules")}</h2>
-			<div class="grid">
-				{#each data.groups.modules as m}
-					<CourseCard
-						title={m.title}
-						description={m.description}
-						image={m.image}
-						url={m.url}
-					/>
-				{/each}
-			</div>
-		{/if}
 		{#if data.groups.contents.length}
 			<h2 class="section">{t(data.lang, "course.contents")}</h2>
 			<ol class="list">
 				{#each data.groups.contents as n}
 					<li>
-						<a class="list-link" href={n.url}>
-							<span class="list-head">
-								<span class="lt">{n.title}</span>
-								<span class="list-icon"><Icon name={iconFor(n.type)} size={18} /></span>
+						<a
+							class="list-link"
+							class:module={n.kind === "folder"}
+							class:has-img={!!n.image}
+							href={n.url}
+						>
+							{#if n.image}
+								<img class="list-img" src={n.image} alt="" loading="lazy" />
+							{/if}
+							<span class="list-body">
+								<span class="list-head">
+									<span class="lt">{n.title}</span>
+									<span class="list-icon">
+										<Icon
+											name={n.kind === "folder" ? "folder" : iconFor(n.type)}
+											size={18}
+										/>
+									</span>
+								</span>
+								{#if n.description}<span class="ld">{n.description}</span>{/if}
 							</span>
-							{#if n.description}<span class="ld">{n.description}</span>{/if}
 						</a>
 					</li>
 				{/each}
@@ -137,12 +138,6 @@
 		justify-content: space-between;
 		gap: 0.4rem 1rem;
 	}
-	.grid {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-	}
-
 	.hero-row {
 		display: flex;
 		justify-content: space-between;
@@ -156,12 +151,13 @@
 		padding: 0;
 		margin: 0;
 	}
-	/* The whole card is the link (not just the title). Icon + title on the top
-	   row, description below spanning the full width. */
+	/* The whole card is the link. Optional image on the left; icon + title on the
+	   top row of the body, description below spanning the body's width. */
 	.list-link {
 		display: flex;
-		flex-direction: column;
-		gap: 0.3rem;
+		flex-direction: row;
+		align-items: stretch;
+		gap: 0.8rem;
 		padding: 0.6rem 0.6rem 0.6rem 1.2rem;
 		border-radius: 0.5rem;
 		background: color-mix(in srgb, var(--secondary) 50%, transparent);
@@ -174,6 +170,34 @@
 	.list-link:hover {
 		background: color-mix(in srgb, var(--secondary) 95%, transparent);
 		box-shadow: 0 6px 18px var(--shadow-color);
+	}
+	/* Modules stand out with a subtle accent tint and a folder icon, so the one
+	   continuous list still reads "folder vs. page" at a glance. */
+	.module {
+		--mod-tint: color-mix(in srgb, var(--secondary) 80%, var(--accent));
+		background: color-mix(in srgb, var(--mod-tint), transparent);
+	}
+	.module:hover {
+		background: color-mix(in srgb, var(--mod-tint) 92%, transparent);
+	}
+	/* With an image, inset it evenly — left padding matches the top/bottom. */
+	.has-img {
+		padding-left: 0.6rem;
+	}
+	.list-img {
+		flex: none;
+		align-self: stretch;
+		width: 3.5rem;
+		object-fit: cover;
+		border-radius: 0.5rem;
+		background: color-mix(in srgb, var(--secondary) 60%, transparent);
+	}
+	.list-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		flex: 1;
+		min-width: 0;
 	}
 	.list-head {
 		display: flex;
