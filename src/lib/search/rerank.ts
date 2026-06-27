@@ -1,7 +1,7 @@
 // src/lib/search/rerank.ts
 // Pure context-aware reranking of Fuse hits. No Fuse import so it stays trivially
 // testable; the worker passes in the Fuse result shape it needs.
-import type { SearchEntry, SearchContext, SearchResult, ResultScope } from './types';
+import type { SearchEntry, SearchContext, SearchResult, ResultScope, SearchSnippet } from './types';
 
 /** Minimal shape of a Fuse result we rely on (score: 0 best .. 1 worst). */
 export interface RankInput {
@@ -42,23 +42,36 @@ function clip(s: string): string {
   return s.replace(/\s+/g, ' ').trim();
 }
 
-export function makeSnippet(e: SearchEntry, matches?: RankInput['matches']): string {
-  // Prefer a body ('text') match, then a heading match, to centre the window.
+/**
+ * Build a preview snippet split around the matched text. Centres on the longest
+ * matched range from Fuse (the most significant "item that caused the match") so
+ * the UI can show it with balanced context on both sides and highlight it.
+ * Slices the ORIGINAL matched value by Fuse's indices first, then collapses
+ * whitespace per-piece — collapsing first would shift the indices.
+ */
+export function makeSnippet(e: SearchEntry, matches?: RankInput['matches']): SearchSnippet {
+  // Prefer a body ('text') match, then a heading match.
   const m =
     matches?.find((x) => x.key === 'text' && x.indices?.length) ??
     matches?.find((x) => x.key === 'heading' && x.indices?.length);
-  const source = clip((m?.value as string) || e.text || '');
-  if (source.length <= SNIPPET_LEN) return source;
+  const full = (m?.value as string) ?? e.text ?? '';
 
-  if (m?.indices?.length) {
-    const [start] = m.indices[0];
-    const from = Math.max(0, start - Math.floor(SNIPPET_LEN / 3));
-    let snip = source.slice(from, from + SNIPPET_LEN);
-    if (from > 0) snip = '…' + snip;
-    if (from + SNIPPET_LEN < source.length) snip = snip + '…';
-    return snip;
+  // No precise match range → a plain leading excerpt (nothing to highlight).
+  if (!m?.indices?.length) {
+    const text = clip(full);
+    return { before: '', hit: '', after: text.length > SNIPPET_LEN ? text.slice(0, SNIPPET_LEN) : text };
   }
-  return source.slice(0, SNIPPET_LEN) + '…';
+
+  // Fuse indices are [start, end] inclusive; pick the longest matched range.
+  const [start, end] = m.indices.reduce((a, b) => (b[1] - b[0] > a[1] - a[0] ? b : a));
+  const hitLen = end + 1 - start;
+  const ctx = Math.max(0, Math.floor((SNIPPET_LEN - hitLen) / 2));
+
+  return {
+    before: clip(full.slice(Math.max(0, start - ctx), start)),
+    hit: clip(full.slice(start, end + 1)),
+    after: clip(full.slice(end + 1, end + 1 + ctx))
+  };
 }
 
 /**
