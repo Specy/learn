@@ -20,6 +20,7 @@
 
 <style>
   .offline {
+    font-family: var(--heading-font);
     max-width: 32rem;
     margin: 18vh auto 0;
     padding: 0 1.5rem;
@@ -47,8 +48,7 @@
     margin: 0 0 1.5rem;
   }
   .retry {
-    background: var(--accent);
-    color: #fff;
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
     border: none;
     border-radius: 0.6rem;
     padding: 0.6rem 1.4rem;

@@ -1,6 +1,7 @@
 // app/src/lib/content/tree.test.ts
 import { describe, it, expect } from 'vitest';
-import { buildTree, getNodeByPath, listRoutes, groupChildren } from './tree';
+import { buildTree, getNodeByPath, listRoutes, groupChildren, parseAuthors } from './tree';
+import { effectiveAuthors } from './context';
 import type { RawFile } from './types';
 
 const files: RawFile[] = [
@@ -32,12 +33,12 @@ describe('buildTree', () => {
     expect(getNodeByPath(root, ['bdd', 'attachments'])).toBeNull();
   });
 
-  it('groups children into modules / lectures / resources', () => {
+  it('groups children into modules and notes kept in order', () => {
     const fisica = getNodeByPath(root, ['fisica']) as any;
     const g = groupChildren(fisica);
     expect(g.modules).toEqual([]);
-    expect(g.lectures.map((n: any) => n.slug)).toEqual(['intro']);
-    expect(g.resources.map((n: any) => n.slug)).toEqual(['formulario']);
+    // lecture (01-intro) and resource (90-formulario) interleaved in prefix order
+    expect(g.notes.map((n: any) => n.slug)).toEqual(['intro', 'formulario']);
   });
 
   it('nests modules and lists every route prefix-stripped', () => {
@@ -45,5 +46,44 @@ describe('buildTree', () => {
     expect(paths).toContain('bdd/teoria');
     expect(paths).toContain('bdd/teoria/intro');
     expect(paths).not.toContain('bdd/attachments'); // not navigable
+  });
+});
+
+describe('authors', () => {
+  it('parseAuthors normalizes strings and objects, drops nameless/empty', () => {
+    expect(parseAuthors(undefined)).toBeUndefined();
+    expect(parseAuthors([])).toBeUndefined();
+    expect(parseAuthors('Specy')).toEqual([{ name: 'Specy' }]);
+    expect(parseAuthors([{ name: 'A', link: 'x', image: 'y' }, 'B'])).toEqual([
+      { name: 'A', link: 'x', image: 'y' },
+      { name: 'B' }
+    ]);
+    expect(parseAuthors([{ link: 'no-name' }])).toBeUndefined();
+  });
+
+  const authored: RawFile[] = [
+    { relPath: '01-c/index.md', frontmatter: { title: 'C', authors: [{ name: 'Course' }] }, content: '' },
+    { relPath: '01-c/01-m/index.md', frontmatter: { title: 'M', authors: [{ name: 'Module' }] }, content: '' },
+    { relPath: '01-c/01-m/01-own.md', frontmatter: { title: 'Own', authors: [{ name: 'Lecture' }] }, content: '' },
+    { relPath: '01-c/01-m/02-inherit.md', frontmatter: { title: 'Inherit' }, content: '' },
+    { relPath: '01-c/02-bare/index.md', frontmatter: { title: 'Bare' }, content: '' },
+    { relPath: '01-c/02-bare/01-deep.md', frontmatter: { title: 'Deep' }, content: '' }
+  ];
+  const aRoot = buildTree(authored);
+
+  it('falls back lecture → module → course', () => {
+    expect(effectiveAuthors(aRoot, 'c/m/own').map((a) => a.name)).toEqual(['Lecture']);
+    expect(effectiveAuthors(aRoot, 'c/m/inherit').map((a) => a.name)).toEqual(['Module']);
+    expect(effectiveAuthors(aRoot, 'c/bare/deep').map((a) => a.name)).toEqual(['Course']);
+    expect(effectiveAuthors(aRoot, 'c/m').map((a) => a.name)).toEqual(['Module']);
+    expect(effectiveAuthors(aRoot, 'c').map((a) => a.name)).toEqual(['Course']);
+  });
+
+  it('returns [] when nothing in the chain declares authors', () => {
+    const root2 = buildTree([
+      { relPath: '01-c/index.md', frontmatter: { title: 'C' }, content: '' },
+      { relPath: '01-c/01-x.md', frontmatter: { title: 'X' }, content: '' }
+    ]);
+    expect(effectiveAuthors(root2, 'c/x')).toEqual([]);
   });
 });

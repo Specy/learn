@@ -1,8 +1,9 @@
 // app/src/lib/content/index.ts
 import { files, assets } from 'virtual:vault';
 import readingTime from 'reading-time';
-import { buildContext, getNodeByPath, listRoutes, extractToc, siblings, breadcrumbsFor } from './context';
+import { buildContext, getNodeByPath, listRoutes, extractToc, siblings, breadcrumbsFor, effectiveAuthors } from './context';
 import { groupChildren } from './tree';
+import type { Author } from './types';
 import { renderMarkdown } from './markdown';
 import { toPlainText } from './plainText';
 import { LANGUAGES } from '$lib/languages';
@@ -30,6 +31,7 @@ export async function renderNode(lang: string, path: string) {
   // Prepend the current /[lang]/ so wikilink hrefs are absolute and resolve
   // correctly from any page depth (and stay within the active language).
   const resolve = withLang(c.resolve, lang);
+  const authors = resolveAuthors(effectiveAuthors(c.root, node.path), resolve);
 
   if (node.kind === 'folder') {
     const html = node.content ? await renderMarkdown(node.content, resolve) : '';
@@ -38,7 +40,7 @@ export async function renderNode(lang: string, path: string) {
     const sib = siblings(c.root, node.path);
     return {
       kind: 'folder' as const, lang,
-      node: folderNode, html, groups: prefixGroups(g, lang, resolve), breadcrumbs,
+      node: folderNode, html, groups: prefixGroups(g, lang, resolve), breadcrumbs, authors,
       prev: sib.prev && { title: sib.prev.title, path: `/${lang}/${sib.prev.path}` },
       next: sib.next && { title: sib.next.title, path: `/${lang}/${sib.next.path}` }
     };
@@ -56,12 +58,25 @@ export async function renderNode(lang: string, path: string) {
   };
   return {
     kind: 'note' as const, lang,
-    node: noteNode,
+    node: noteNode, authors,
     html, toc: extractToc(html), readingText: stats.text,
     prev: sib.prev && { title: sib.prev.title, path: `/${lang}/${sib.prev.path}` },
     next: sib.next && { title: sib.next.title, path: `/${lang}/${sib.next.path}` },
     breadcrumbs
   };
+}
+
+/** Resolve author avatars: pass through absolute URLs/paths, else vault asset. */
+function resolveAuthors(authors: Author[], resolve: Context['resolve']): Author[] {
+  return authors.map((a) => ({
+    name: a.name,
+    link: a.link,
+    image: a.image
+      ? /^(https?:)?\/\//.test(a.image) || a.image.startsWith('/')
+        ? a.image
+        : resolve.asset(a.image)
+      : undefined
+  }));
 }
 
 /**
@@ -86,5 +101,5 @@ function stripBody(f: any) { return { ...f, content: '', children: undefined }; 
 function prefixGroups(g: any, lang: string, resolve: Context['resolve']) {
   const map = (n: any) => ({ slug: n.slug, title: n.title, description: n.description,
     image: n.image ? resolve.asset(n.image) : undefined, type: n.type, url: `/${lang}/${n.path}` });
-  return { modules: g.modules.map(map), lectures: g.lectures.map(map), resources: g.resources.map(map) };
+  return { modules: g.modules.map(map), contents: g.notes.map(map) };
 }

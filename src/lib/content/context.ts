@@ -1,6 +1,6 @@
 // app/src/lib/content/context.ts
 import { buildTree, getNodeByPath, listRoutes } from './tree';
-import type { RawFile, FolderNode, NoteNode } from './types';
+import type { RawFile, FolderNode, NoteNode, Author } from './types';
 import type { LinkResolver } from './markdown';
 
 export interface Context { root: FolderNode; resolve: LinkResolver; }
@@ -39,18 +39,22 @@ export function decodeExcalidrawSentinel(s: string): { light: string | null; dar
 
 export function makeResolver(root: FolderNode, assets: Record<string, unknown>): LinkResolver {
   const { titleMap, slugMap } = indexByTitleAndSlug(root);
+  // Match by title, by slug, or by slug with a leading NN- prefix stripped — so
+  // Obsidian links that use the on-disk filename (e.g. [[09-screenshot-utili]])
+  // still resolve to the prefix-stripped route.
+  const lookup = (key: string) =>
+    titleMap.get(key) ?? slugMap.get(key) ?? slugMap.get(key.replace(/^\d+-/, ''));
   return {
     note(target: string) {
       const [name, anchor] = target.split('#');
       const key = name.trim().toLowerCase();
-      const hit = titleMap.get(key) ?? slugMap.get(key);
+      const hit = lookup(key);
       const base = hit ? hit.path : key.replace(/\s+/g, '-');
       return anchor ? `${base}#${anchor.trim().toLowerCase().replace(/\s+/g, '-')}` : base;
     },
     noteLabel(target: string) {
       const [name] = target.split('#');
-      const key = name.trim().toLowerCase();
-      const hit = titleMap.get(key) ?? slugMap.get(key);
+      const hit = lookup(name.trim().toLowerCase());
       return hit ? hit.title : null;
     },
     asset(target: string) {
@@ -154,6 +158,21 @@ export function breadcrumbsFor(
   // Prepend the root/home crumb
   result.unshift({ title: homeTitle ?? (root.title || lang), url: `/${lang}` });
   return result;
+}
+
+/**
+ * Authors for a page, with fallback: the node's own authors, else the nearest
+ * ancestor (module → course) that declares any, else none. So a lecture inherits
+ * its module's authors, a module inherits the course's, and the course shows its
+ * own (or nothing).
+ */
+export function effectiveAuthors(root: FolderNode, path: string): Author[] {
+  const segs = path ? path.split('/') : [];
+  for (let i = segs.length; i >= 1; i--) {
+    const node = getNodeByPath(root, segs.slice(0, i));
+    if (node?.authors?.length) return node.authors;
+  }
+  return root.authors ?? [];
 }
 
 export { getNodeByPath, listRoutes };

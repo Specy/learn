@@ -1,8 +1,25 @@
 // app/src/lib/content/tree.ts
 import { parseEntryName, stripMdExt } from './slug';
-import type { RawFile, FolderNode, NoteNode, ContentNode, NoteType } from './types';
+import type { RawFile, FolderNode, NoteNode, ContentNode, NoteType, Author } from './types';
 
 const BIG = Number.MAX_SAFE_INTEGER;
+
+/** Normalize the frontmatter `authors` field to Author[] (undefined if none). */
+export function parseAuthors(raw: any): Author[] | undefined {
+  if (!raw) return undefined;
+  const arr = Array.isArray(raw) ? raw : [raw];
+  const out: Author[] = [];
+  for (const a of arr) {
+    if (typeof a === 'string' && a.trim()) out.push({ name: a.trim() });
+    else if (a && typeof a === 'object' && a.name)
+      out.push({
+        name: String(a.name),
+        link: a.link ? String(a.link) : undefined,
+        image: a.image ? String(a.image) : undefined
+      });
+  }
+  return out.length ? out : undefined;
+}
 
 function emptyFolder(slug: string, path: string, order: number): FolderNode {
   return { kind: 'folder', slug, path, order, title: slug, description: '',
@@ -34,9 +51,11 @@ export function buildTree(files: RawFile[]): FolderNode {
     }
 
     if (stripMdExt(fileName) === 'index') {
+      cursor.relPath = file.relPath;
       cursor.title = file.frontmatter.title ?? cursor.slug;
       cursor.description = file.frontmatter.description ?? '';
       cursor.image = file.frontmatter.image;
+      cursor.authors = parseAuthors(file.frontmatter.authors);
       cursor.order = file.frontmatter.order ?? cursor.order;
       cursor.published = file.frontmatter.published ?? true;  // navigable now
       cursor.content = file.content;
@@ -46,11 +65,13 @@ export function buildTree(files: RawFile[]): FolderNode {
       const note: NoteNode = {
         kind: 'note', slug,
         path: [...urlSegs, slug].join('/'),
+        relPath: file.relPath,
         order: file.frontmatter.order ?? order ?? BIG,
         title: file.frontmatter.title ?? slug,
         description: file.frontmatter.description ?? '',
         type: (file.frontmatter.type as NoteType) ?? 'lecture',
         published: file.frontmatter.published ?? true,
+        authors: parseAuthors(file.frontmatter.authors),
         content: file.content,
         frontmatter: file.frontmatter
       };
@@ -85,12 +106,12 @@ export function getNodeByPath(root: FolderNode, segments: string[]): ContentNode
 }
 
 export function groupChildren(folder: FolderNode) {
-  const modules = folder.children.filter((c): c is FolderNode => c.kind === 'folder');
-  const notes = folder.children.filter((c): c is NoteNode => c.kind === 'note');
+  // `notes` keeps the folder's natural order (by prefix/order) — lectures and
+  // resources interleaved — so the page can show one ordered list with a
+  // per-type icon instead of separate sections.
   return {
-    modules,
-    lectures: notes.filter((n) => n.type === 'lecture'),
-    resources: notes.filter((n) => n.type !== 'lecture')
+    modules: folder.children.filter((c): c is FolderNode => c.kind === 'folder'),
+    notes: folder.children.filter((c): c is NoteNode => c.kind === 'note')
   };
 }
 
