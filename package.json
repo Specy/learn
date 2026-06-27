@@ -23,13 +23,13 @@
     "playwright": "^1.61.1",
     "svelte": "^5",
     "svelte-check": "^4",
-    "typescript": "^5",
+    "typescript": "^6",
     "vite": "^8",
-    "vitest": "^3.2.6"
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@shikijs/rehype": "^4.3.0",
-    "katex": "^0.16.47",
+    "katex": "^0.17.0",
     "mermaid": "^11.16.0",
     "reading-time": "^1.5.0",
     "rehype-autolink-headings": "^7.1.0",
