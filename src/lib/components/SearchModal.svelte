@@ -229,8 +229,16 @@
 											<span class="r-sep">›</span>
 											<span class="r-heading">{r.heading}</span>
 										</span>
-										{#if r.snippet}<span class="r-snippet">{r.snippet}</span
-											>{/if}
+										{#if r.snippet.hit || r.snippet.after || r.snippet.before}
+											<span class="r-snippet">
+												{#if r.snippet.before}<span class="s-before"
+														><bdi>{r.snippet.before}</bdi></span
+													>{/if}{#if r.snippet.hit}<mark>{r.snippet.hit}</mark
+													>{/if}{#if r.snippet.after}<span class="s-after"
+														>{r.snippet.after}</span
+													>{/if}
+											</span>
+										{/if}
 									{/if}
 								</span>
 								{#if scopeLabelText !== ""}
@@ -281,7 +289,7 @@
 		max-height: 72vh;
 		display: flex;
 		flex-direction: column;
-		background: var(--glass-1);
+		background: var(--modal-glass);
 		backdrop-filter: blur(0.8rem);
 		border: 1px solid var(--background);
 		box-shadow: 0 16px 48px var(--shadow-color);
@@ -404,12 +412,39 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+	/* Snippet keeps the matched text centred and always visible: before/after
+	   share the remaining width and ellipsize toward the match (before clips at
+	   its start via dir=rtl + <bdi>, after clips at its end). */
 	.r-snippet {
+		display: flex;
+		align-items: baseline;
+		min-width: 0;
 		color: var(--muted);
 		font-size: 0.85rem;
-		white-space: nowrap;
+		line-height: 1.3;
+	}
+	.s-before,
+	.s-after {
+		flex: 1 1 0;
+		min-width: 0;
 		overflow: hidden;
+		white-space: nowrap;
 		text-overflow: ellipsis;
+	}
+	.s-before {
+		direction: rtl;
+		text-align: left;
+	}
+	.r-snippet mark {
+		flex: 0 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		background: color-mix(in srgb, var(--accent) 22%, transparent);
+		color: var(--background-text);
+		border-radius: 0.2rem;
+		padding: 0 0.15rem;
 	}
 
 	.chip {
