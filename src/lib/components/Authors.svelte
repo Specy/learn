@@ -26,7 +26,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.9rem;
   }
   .author {
     display: inline-flex;
@@ -58,6 +57,7 @@
     object-fit: cover;
   }
   .author-name {
+    font-family: var(--heading-font), sans-serif;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
