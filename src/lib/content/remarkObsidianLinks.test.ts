@@ -45,4 +45,17 @@ describe('obsidian links', () => {
     expect(html).toContain('href="/note/some-unknown-slug"');
     expect(html).toContain('>some-unknown-slug</a>');
   });
+  it('clamps a long label to 32 chars + ellipsis, full text in the title', async () => {
+    const full = 'Architettura dei sistemi distribuiti e scalabili';
+    const display = full.slice(0, 32).trimEnd() + '…';
+    const html = await renderMarkdown(`[[agente|${full}]]`, resolve);
+    expect(html).toContain(`>${display}</a>`);
+    expect(html).not.toContain(`>${full}</a>`);
+    expect(html).toContain(`title="${full}"`);
+  });
+  it('leaves short labels untouched and adds no title', async () => {
+    const html = await renderMarkdown('[[L01|Lezione 1]]', resolve);
+    expect(html).toContain('>Lezione 1</a>');
+    expect(html).not.toContain('title=');
+  });
 });
