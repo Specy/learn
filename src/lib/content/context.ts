@@ -39,18 +39,22 @@ export function decodeExcalidrawSentinel(s: string): { light: string | null; dar
 
 export function makeResolver(root: FolderNode, assets: Record<string, unknown>): LinkResolver {
   const { titleMap, slugMap } = indexByTitleAndSlug(root);
+  // Match by title, by slug, or by slug with a leading NN- prefix stripped — so
+  // Obsidian links that use the on-disk filename (e.g. [[09-screenshot-utili]])
+  // still resolve to the prefix-stripped route.
+  const lookup = (key: string) =>
+    titleMap.get(key) ?? slugMap.get(key) ?? slugMap.get(key.replace(/^\d+-/, ''));
   return {
     note(target: string) {
       const [name, anchor] = target.split('#');
       const key = name.trim().toLowerCase();
-      const hit = titleMap.get(key) ?? slugMap.get(key);
+      const hit = lookup(key);
       const base = hit ? hit.path : key.replace(/\s+/g, '-');
       return anchor ? `${base}#${anchor.trim().toLowerCase().replace(/\s+/g, '-')}` : base;
     },
     noteLabel(target: string) {
       const [name] = target.split('#');
-      const key = name.trim().toLowerCase();
-      const hit = titleMap.get(key) ?? slugMap.get(key);
+      const hit = lookup(name.trim().toLowerCase());
       return hit ? hit.title : null;
     },
     asset(target: string) {

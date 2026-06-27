@@ -2,7 +2,7 @@
   // Minimal inline SVG icons (feather-style), stroked with currentColor so they
   // inherit the surrounding text colour. Replaces emoji in UI chrome.
   let { name, size = 20, class: klass = '' }: {
-    name: 'sun' | 'moon' | 'chevron' | 'home' | 'menu' | 'x' | 'search' | 'file' | 'hash' | 'github' | 'heart' | 'edit';
+    name: 'sun' | 'moon' | 'chevron' | 'home' | 'menu' | 'x' | 'search' | 'file' | 'hash' | 'github' | 'heart' | 'edit' | 'book' | 'clipboard' | 'list' | 'paperclip';
     size?: number;
     class?: string;
   } = $props();
@@ -55,6 +55,21 @@
   {:else if name === 'edit'}
     <path d="M12 20h9" />
     <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  {:else if name === 'book'}
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  {:else if name === 'clipboard'}
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+  {:else if name === 'list'}
+    <line x1="8" y1="6" x2="21" y2="6" />
+    <line x1="8" y1="12" x2="21" y2="12" />
+    <line x1="8" y1="18" x2="21" y2="18" />
+    <line x1="3" y1="6" x2="3.01" y2="6" />
+    <line x1="3" y1="12" x2="3.01" y2="12" />
+    <line x1="3" y1="18" x2="3.01" y2="18" />
+  {:else if name === 'paperclip'}
+    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
   {/if}
 </svg>
 
