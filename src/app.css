@@ -1,0 +1,497 @@
+/* global */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* UI links (nav, cards, breadcrumbs, lists) are not underlined; prose links
+   inside rendered markdown (`.md a`, defined below) opt back in. */
+a {
+  text-decoration: none;
+}
+
+/* ─── Theme CSS variables (applied by theme store on <html>) ─────────────────
+   Defaults match dark theme so SSR/prerender have sensible values.           */
+:root {
+  --background: #171A21;
+  --secondary: #212630;
+  --tertiary: #2d3950;
+  --footer: #1c2029;
+  --accent: #a65ee0;
+  --accent2: #38454f;
+  --hint: #939393;
+  --warn: #ed4f4f;
+  --success: #356a59;
+  --background-text: #d4d4d4;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --muted: #8a91a0;
+  /* Semi-transparent card behind article text so the blurred blobs don't
+     disturb readability (specy.app `.md-content` uses rgba(23,26,33,0.67)). */
+  --md-bg: rgba(23, 26, 33, 0.67);
+
+  --paragraph-font: 'Noto Serif', serif;
+  --paragraph-weight: 500;
+  --heading-font: 'Rubik', sans-serif;
+  --heading-weight: 800;
+  --code-font: 'Fira Code', monospace;
+}
+
+/* Light-theme overrides for the non-JS-managed vars (the theme store only sets
+   the palette vars; these derive from the theme here). */
+html[data-theme='light'] {
+  --muted: #6c757d;
+  --md-bg: rgba(250, 250, 250, 0.72);
+}
+
+/* ─── Base body ──────────────────────────────────────────────────────────── */
+body {
+  background: var(--background);
+  color: var(--background-text);
+  font-family: var(--paragraph-font);
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Code blocks (Shiki, defaultColor: false) ───────────────────────────────
+   Token COLORS come from the Shiki theme vars (one-light / one-dark-pro);
+   the CONTAINER look (translucent bg, padding, radius) matches specy.app's
+   prism-one-dark.css so it reads the same on both themes.                     */
+.shiki {
+  background: #52537a1a !important;
+  /* beats Shiki's inline bg; subtle on both themes */
+  padding: 0.8em 1em;
+  margin: 1.3rem 0;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  font-family: var(--code-font), monospace;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+
+html[data-theme='dark'] .shiki,
+html[data-theme='dark'] .shiki span {
+  color: var(--shiki-dark) !important;
+}
+
+html[data-theme='dark'] .shiki span {
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+}
+
+/* ─── KaTeX theming ──────────────────────────────────────────────────────── */
+.katex {
+  color: var(--background-text);
+}
+
+/* ─── Excalidraw dual-theme embed ────────────────────────────────────────── */
+.excalidraw-dark {
+  display: none;
+}
+
+html[data-theme="dark"] .excalidraw-light {
+  display: none;
+}
+
+html[data-theme="dark"] .excalidraw-dark {
+  display: inline-block;
+}
+
+.excalidraw-img {
+  max-width: 100%;
+}
+
+/* ─── Callouts (from remarkCallouts) ─────────────────────────────────────── */
+.callout {
+  border-left: 0.3rem solid var(--accent);
+  padding: 0.7rem 1rem;
+  border-radius: 0.3rem 0.8rem 0.8rem 0.3rem;
+  background: #52537a1a;
+  /* same translucent surface as code blocks */
+  margin: 1rem 0;
+}
+
+.callout> :last-child {
+  margin-bottom: 0 !important;
+}
+
+.callout-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--heading-font), sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+.callout-icon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Callout theme border and title color coordination */
+.callout-info, .callout-todo {
+  border-left-color: #4a9eff;
+}
+.callout-info .callout-title, .callout-todo .callout-title {
+  color: #4a9eff;
+}
+
+.callout-warning, .callout-caution, .callout-attention {
+  border-left-color: var(--warn);
+}
+.callout-warning .callout-title, .callout-caution .callout-title, .callout-attention .callout-title {
+  color: var(--warn);
+}
+
+.callout-danger, .callout-error, .callout-failure, .callout-fail, .callout-missing {
+  border-left-color: var(--warn);
+}
+.callout-danger .callout-title, .callout-error .callout-title, .callout-failure .callout-title, .callout-fail .callout-title, .callout-missing .callout-title {
+  color: var(--warn);
+}
+
+.callout-tip, .callout-hint, .callout-success, .callout-check, .callout-done {
+  border-left-color: var(--success);
+}
+.callout-tip .callout-title, .callout-hint .callout-title, .callout-success .callout-title, .callout-check .callout-title, .callout-done .callout-title {
+  color: var(--success);
+}
+
+.callout-note, .callout-src, .callout-quote, .callout-cite {
+  border-left-color: var(--hint);
+}
+.callout-note .callout-title, .callout-src .callout-title, .callout-quote .callout-title, .callout-cite .callout-title {
+  color: var(--hint);
+}
+
+.callout-abstract, .callout-summary, .callout-tldr {
+  border-left-color: #00a896;
+}
+.callout-abstract .callout-title, .callout-summary .callout-title, .callout-tldr .callout-title {
+  color: #00a896;
+}
+
+.callout-question, .callout-help, .callout-faq {
+  border-left-color: #f39c12;
+}
+.callout-question .callout-title, .callout-help .callout-title, .callout-faq .callout-title {
+  color: #f39c12;
+}
+
+.callout-bug {
+  border-left-color: #d63031;
+}
+.callout-bug .callout-title {
+  color: #d63031;
+}
+
+.callout-example {
+  border-left-color: var(--accent);
+}
+.callout-example .callout-title {
+  color: var(--accent);
+}
+
+.callout-important {
+  border-left-color: var(--accent);
+}
+.callout-important .callout-title {
+  color: var(--accent);
+}
+
+/* Foldable callout affordance */
+.callout[data-callout-fold] .callout-title {
+  cursor: pointer;
+}
+
+/* Folded state — hide everything except the title */
+.callout.folded> :not(.callout-title) {
+  display: none;
+}
+
+/* ─── Article / markdown typography (.md) ────────────────────────────────── */
+/*
+   Ported from specy.app's BlogLayout.svelte.
+   Hardcoded dark colors converted to theme CSS vars:
+     #d4d4d4 / #dbdbdb   → var(--background-text)
+     rgba(23,26,33,0.67) → var(--secondary)
+     #212431             → var(--secondary)
+     #52537a1a           → color-mix(in srgb, var(--tertiary) 10%, transparent)
+*/
+/* Plain block flow (NOT flex+gap) so element margins alone control spacing —
+   the previous flex `gap` stacked on top of margins and doubled the spacing. */
+.md {
+  width: 100%;
+}
+
+.md> :first-child {
+  margin-top: 0;
+}
+
+.md p:not(.mermaid *),
+.md li:not(.mermaid *) {
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  margin: 1.3rem 0;
+  color: var(--background-text);
+  font-family: var(--paragraph-font);
+  font-weight: var(--paragraph-weight);
+}
+
+.md h1,
+.md h2,
+.md h3,
+.md h4 {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  color: var(--background-text);
+  letter-spacing: 0.02em;
+}
+
+.md h1>a,
+.md h2>a,
+.md h3>a,
+.md h4>a {
+  letter-spacing: 0.02em;
+  color: var(--background-text);
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  text-decoration: none;
+}
+
+.md h1 {
+  margin-top: 4rem;
+  font-size: 2.2rem;
+}
+
+.md h2 {
+  margin-top: 1rem;
+  font-size: 1.8rem;
+}
+
+/* Display (block) math centered horizontally. */
+.md .katex-display {
+  text-align: center;
+  margin: 1.2rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.md h3 {
+  font-size: 1.4rem;
+}
+
+.md img {
+  width: 100%;
+  max-width: 40rem;
+  display: block;
+  margin: 0.2rem auto;
+  border-radius: 0.5rem;
+}
+
+.md video {
+  border-radius: 0.5rem;
+  background-color: var(--secondary);
+}
+
+.md hr {
+  border: none;
+  height: 2px;
+  background-color: var(--secondary);
+  margin: 2rem 0;
+}
+
+.md a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.md ul,
+.md ol {
+  padding-left: 1rem;
+  font-size: 1.1rem;
+  color: var(--background-text);
+}
+
+.md ul>li,
+.md ol>li {
+  margin: 0.5rem 0;
+}
+
+.md blockquote {
+  border-radius: 0.3rem 0.8rem 0.8rem 0.3rem;
+  padding: 0.7rem 1rem;
+  border-left: 0.3rem solid var(--accent);
+  background: #52537a1a;
+  margin: 1rem 0;
+}
+
+.md blockquote :first-child {
+  margin-top: 0;
+}
+
+.md blockquote :last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code — accent colour wrapped in backticks (specy.app style). */
+.md :not(pre)>code {
+  font-family: var(--code-font), monospace;
+  color: var(--accent);
+  white-space: normal;
+  font-size: 0.95em;
+}
+
+.md :not(pre)>code::before,
+.md :not(pre)>code::after {
+  content: '`';
+}
+
+/* Tables — rounded corners + the same translucent surface as code blocks.
+   border-collapse: separate (+ overflow hidden) so the radius actually clips. */
+.md table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem auto;
+  font-size: 1rem;
+  background: #52537a1a;
+  border: 1px solid var(--accent2);
+  /* outer border */
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  width: fit-content;     /* Shrinks the table block to fit the actual columns */
+  max-width: 100%;
+}
+
+/* Inner grid lines: each cell draws its bottom + right border; the table's own
+   border covers the outer edges, so drop the last column/row inner edges. */
+.md th,
+.md td {
+  padding: 0.5rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--accent2);
+  border-right: 1px solid var(--accent2);
+}
+
+.md th:last-child,
+.md td:last-child {
+  border-right: none;
+}
+
+.md tr:last-child td {
+  border-bottom: none;
+}
+
+.md th {
+  background: var(--secondary);
+  font-family: var(--heading-font), sans-serif;
+}
+
+/* ─── Article layout + hero (matches specy.app BlogLayout) ───────────────── */
+.article {
+  width: 100%;
+  /* font-size drives the `ch` unit below, so 1.1rem widens the column to match
+     the 1.1rem body text (the readable measure stays ~80 characters). */
+  font-size: 1.1rem;
+  max-width: calc(80ch + 2rem);
+  margin: 3rem auto 6rem;
+  padding: 0 1rem;
+}
+
+@media screen and (max-width: 768px) {
+  .article {
+    padding: 0 0.8rem;
+    margin: 1rem auto 3rem;
+  }
+}
+
+/* Hero: big Rubik title, muted meta line, serif description — on the blobs. */
+.hero {
+  padding: 1rem 1rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.main-header {
+  font-family: var(--heading-font), sans-serif;
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--background-text);
+}
+
+.hero-meta {
+  font-family: var(--heading-font), sans-serif;
+  font-size: 1.3rem;
+  color: var(--muted);
+  margin: 0.8rem 0 0;
+}
+
+.hero-desc {
+  font-family: var(--paragraph-font), serif;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--background-text);
+  margin: 1rem 0 0;
+  padding: 1rem;
+}
+
+/* Semi-transparent card with a soft glow so the blurred blobs behind the
+   article body don't disturb the text (specy.app `.md-content`). */
+.md-content {
+  background-color: var(--md-bg);
+  box-shadow: 0 0 3rem 3rem var(--md-bg);
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+}
+
+/* Section headings on folder (course) pages — match .md headings. */
+.article h2.section {
+  font-family: var(--heading-font), sans-serif;
+  font-weight: var(--heading-weight);
+  color: var(--background-text);
+  font-size: 1.8rem;
+  margin: 2.5rem 0 1rem;
+}
+
+@media (max-width: 700px) {
+  .md-content {
+    box-shadow: none;
+    background-color: color-mix(in srgb, var(--md-bg) 60%, transparent);
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-header {
+    font-size: 2.3rem;
+  }
+
+  .hero-meta,
+  .hero-desc {
+    font-size: 1.1rem;
+  }
+
+  .md h1 {
+    font-size: 2rem;
+  }
+
+  .md p,
+  .md li {
+    font-size: 1.1rem;
+  }
+}
