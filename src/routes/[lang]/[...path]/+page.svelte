@@ -89,8 +89,8 @@
 					<li>
 						<a class="list-link" href={n.url}>
 							<span class="list-head">
-								<span class="list-icon"><Icon name={iconFor(n.type)} size={18} /></span>
 								<span class="lt">{n.title}</span>
+								<span class="list-icon"><Icon name={iconFor(n.type)} size={18} /></span>
 							</span>
 							{#if n.description}<span class="ld">{n.description}</span>{/if}
 						</a>
@@ -150,7 +150,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.3rem;
-		padding: 0.6rem 0.9rem;
+		padding: 0.6rem 0.6rem 0.6rem 1.2rem;
 		border-radius: 0.5rem;
 		background: color-mix(in srgb, var(--secondary) 50%, transparent);
 		box-shadow: 0 1px 3px var(--shadow-color);
@@ -165,6 +165,7 @@
 	}
 	.list-head {
 		display: flex;
+		justify-content: space-between;
 		align-items: center;
 		gap: 0.6rem;
 		min-width: 0;

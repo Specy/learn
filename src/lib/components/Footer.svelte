@@ -24,7 +24,7 @@
       <Icon name="github" size={15} />{t(lang, 'footer.repoNotes')}
     </a>
     {#if edit}
-      <a href={edit} target="_blank" rel="noopener noreferrer">
+      <a href={edit} target="_blank" class="edit" rel="noopener noreferrer">
         <Icon name="edit" size={15} />{t(lang, 'footer.edit')}
       </a>
     {/if}
@@ -33,13 +33,14 @@
 
 <style>
   .footer {
+    font-family: var(--heading-font);
     margin-top: 3rem;
     padding-bottom: 2.5rem;
   }
   /* Thin separator, inset from the edges and fading to transparent on both ends. */
   .footer-sep {
-    height: 1px;
-    width: min(85%, 46rem);
+    height: 2px;
+    width: min(85%, 55rem);
     margin: 0 auto 1.25rem;
     background: linear-gradient(to right, transparent, var(--accent2), transparent);
   }
@@ -61,5 +62,12 @@
   }
   .footer-links a:hover {
     color: var(--accent);
+  }
+
+  .edit {
+    border-radius: 1rem;
+    padding: 0.25rem 0.5rem;
+    background-color: color-mix(in srgb, var(--accent) 20%,  var(--secondary));
+    color: var(--background-text) !important;
   }
 </style>
