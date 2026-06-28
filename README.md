@@ -51,9 +51,9 @@ Content is discovered by **convention**, not hardcoded. The rules:
 ---
 title: Reti di Calcolatori
 description: Internet, protocolli, TCP/UDP, routing, link layer, wireless e sicurezza.
-image: attachments/cover.webp   # optional cover
-order: 6                        # optional; defaults to the NN- prefix
-published: true                 # optional; default true (set false to hide)
+image: attachments/cover.webp # optional cover
+order: 6 # optional; defaults to the NN- prefix
+published: true # optional; default true (set false to hide)
 ---
 Longer overview in markdown…
 ```

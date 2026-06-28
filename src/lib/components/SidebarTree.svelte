@@ -1,52 +1,46 @@
 <script lang="ts">
-	import type { ContentNode } from "$lib/content/types"
-	import Icon from "./Icon.svelte"
-	import SidebarTree from "./SidebarTree.svelte"
+	import type { ContentNode } from '$lib/content/types';
+	import Icon from './Icon.svelte';
+	import SidebarTree from './SidebarTree.svelte';
 
 	let {
 		node,
 		lang,
 		activePath,
-		onSelect,
+		onSelect
 	}: {
-		node: ContentNode
-		lang: string
-		activePath: string
-		onSelect: () => void
-	} = $props()
+		node: ContentNode;
+		lang: string;
+		activePath: string;
+		onSelect: () => void;
+	} = $props();
 
-	let isFolder = $derived(node.kind === "folder")
-	let isRootCourse = $derived(isFolder && !node.path.includes("/"))
-	let isActive = $derived(
-		activePath === node.path || activePath.startsWith(node.path + "/"),
-	)
-	let isOpen = $state(false)
+	let isFolder = $derived(node.kind === 'folder');
+	let isRootCourse = $derived(isFolder && !node.path.includes('/'));
+	let isActive = $derived(activePath === node.path || activePath.startsWith(node.path + '/'));
+	let isOpen = $state(false);
 
 	// Initialize folder open state based on active path
 	$effect.pre(() => {
 		if (isFolder && isActive) {
-			isOpen = true
+			isOpen = true;
 		}
-	})
+	});
 
 	function toggleOpen() {
-		isOpen = !isOpen
+		isOpen = !isOpen;
 	}
 </script>
 
 {#if isFolder}
-	<div
-		class="folder-item"
-		class:is-root-course={isRootCourse}
-		class:active={isActive}
-	>
+	<div class="folder-item" class:is-root-course={isRootCourse} class:active={isActive}>
 		<div
 			class="folder-header"
 			class:active={isActive}
 			onclick={toggleOpen}
 			role="button"
 			tabindex="0"
-			onkeydown={(e) => e.key === "Enter" && toggleOpen()}
+			onkeydown={(e) => e.key === 'Enter' && toggleOpen()}
 		>
 			<span class="chevron-wrapper" class:rotated={isOpen}>
 				<Icon name="chevron" size={14} />
@@ -65,10 +59,10 @@
 						onclick={onSelect}
 					>
 						<span class="note-bullet"></span>
-						<span class="note-title">{lang === "it" ? "Indice" : "Index"}</span>
+						<span class="note-title">{lang === 'it' ? 'Indice' : 'Index'}</span>
 					</a>
 				</li>
-				{#each node.kind === "folder" ? node.children : [] as child}
+				{#each node.kind === 'folder' ? node.children : [] as child}
 					<li>
 						<SidebarTree node={child} {lang} {activePath} {onSelect} />
 					</li>
@@ -111,23 +105,19 @@
 			background-color 0.2s;
 	}
 
+	.order {
+		font-family: Rubik;
+		padding: 0.25ch 1ch;
+		min-width: 4ch;
+		background-color: var(--background);
+		border-radius: 1rem;
+		text-align: center;
+		margin-right: 1rem;
+	}
 
-  .order {
-	font-family: Rubik;
-    padding: 0.25ch 1ch;
-    min-width: 4ch;
-    background-color: var(--background);
-    border-radius: 1rem;
-    text-align: center;
-    margin-right: 1rem;
-  }
-
-  .order.active {
-    background-color: var(--accent);
-    color: var(--background);
-  }
-
-	.folder-item.is-root-course.active {
+	.order.active {
+		background-color: var(--accent);
+		color: var(--background);
 	}
 
 	.folder-header {

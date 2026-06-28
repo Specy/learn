@@ -1,57 +1,56 @@
 <script lang="ts">
-	import type { PageProps } from "./$types"
-	import Breadcrumbs from "$lib/components/Breadcrumbs.svelte"
-	import NoteNav from "$lib/components/NoteNav.svelte"
-	import Toc from "$lib/components/Toc.svelte"
-	import { t } from "$lib/i18n"
-	import RenderedMarkdown from "$lib/components/RenderedMarkdown.svelte"
-	import SEO from "$lib/components/SEO.svelte"
-	import Authors from "$lib/components/Authors.svelte"
-	import Icon from "$lib/components/Icon.svelte"
+	import type { PageProps } from './$types';
+	import type { NoteNode } from '$lib/content/types';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
+	import NoteNav from '$lib/components/NoteNav.svelte';
+	import Toc from '$lib/components/Toc.svelte';
+	import { t } from '$lib/i18n';
+	import RenderedMarkdown from '$lib/components/RenderedMarkdown.svelte';
+	import SEO from '$lib/components/SEO.svelte';
+	import Authors from '$lib/components/Authors.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 
-	let { data }: PageProps = $props()
+	let { data }: PageProps = $props();
 
 	// Icon per content type, shown to the left of each item in the unified list.
-	function iconFor(type: string) {
-		return type === "resource"
-			? "paperclip"
-			: type === "exercise"
-				? "edit"
-				: type === "exam"
-					? "clipboard"
-					: type === "summary"
-						? "list"
-						: "book" // lecture / default
+	function iconFor(type: string | undefined) {
+		return type === 'resource'
+			? 'paperclip'
+			: type === 'exercise'
+				? 'edit'
+				: type === 'exam'
+					? 'clipboard'
+					: type === 'summary'
+						? 'list'
+						: 'book'; // lecture / default
 	}
 
 	const keywords = $derived(
 		(() => {
-			if (data.kind !== "note") return []
-			const node = data.node as any
-			const raw =
-				node.frontmatter?.topics ||
-				node.frontmatter?.tags ||
-				node.frontmatter?.keywords
-			if (!raw) return []
-			if (Array.isArray(raw)) return raw.map(String)
-			if (typeof raw === "string") return raw.split(",").map((s) => s.trim())
-			return []
-		})(),
-	)
+			if (data.kind !== 'note') return [];
+			const node = data.node as NoteNode;
+			const fm = node.frontmatter as { topics?: unknown; tags?: unknown; keywords?: unknown };
+			const raw = fm.topics || fm.tags || fm.keywords;
+			if (!raw) return [];
+			if (Array.isArray(raw)) return raw.map(String);
+			if (typeof raw === 'string') return raw.split(',').map((s) => s.trim());
+			return [];
+		})()
+	);
 </script>
 
 <SEO
 	title={data.node.title}
 	description={data.node.description}
-	image={data.kind === "folder"
+	image={data.kind === 'folder'
 		? data.node.image
-		: (data.node as any).frontmatter?.image}
-	type={data.kind === "folder" ? "website" : "article"}
+		: (data.node.frontmatter as { image?: string }).image}
+	type={data.kind === 'folder' ? 'website' : 'article'}
 	lang={data.lang}
 	{keywords}
 />
 
-{#if data.kind === "folder"}
+{#if data.kind === 'folder'}
 	<article class="article">
 		<div class="crumbs-row">
 			<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
@@ -71,13 +70,13 @@
 		{/if}
 
 		{#if data.groups.contents.length}
-			<h2 class="section">{t(data.lang, "course.contents")}</h2>
+			<h2 class="section">{t(data.lang, 'course.contents')}</h2>
 			<ol class="list">
 				{#each data.groups.contents as n}
 					<li>
 						<a
 							class="list-link"
-							class:module={n.kind === "folder"}
+							class:module={n.kind === 'folder'}
 							class:has-img={!!n.image}
 							href={n.url}
 						>
@@ -88,10 +87,7 @@
 								<span class="list-head">
 									<span class="lt">{n.title}</span>
 									<span class="list-icon">
-										<Icon
-											name={n.kind === "folder" ? "folder" : iconFor(n.type)}
-											size={18}
-										/>
+										<Icon name={n.kind === 'folder' ? 'folder' : iconFor(n.type)} size={18} />
 									</span>
 								</span>
 								{#if n.description}<span class="ld">{n.description}</span>{/if}
@@ -130,13 +126,15 @@
 {/if}
 
 <style>
-	/* Breadcrumbs on the left, authors on the right; wraps when tight. */
+	/* Breadcrumbs on the left, authors on the right; when tight the authors wrap
+	   directly below the breadcrumbs (both share the row's left edge). */
 	.crumbs-row {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.4rem 1rem;
+		gap: 0.5rem 1rem;
+		padding: 0 1rem;
 	}
 	.hero-row {
 		display: flex;

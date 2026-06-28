@@ -4,14 +4,14 @@
 		description,
 		image,
 		imageAlt,
-		url,
+		url
 	}: {
-		title: string
-		description: string
-		image?: string
-		imageAlt?: string
-		url: string
-	} = $props()
+		title: string;
+		description: string;
+		image?: string;
+		imageAlt?: string;
+		url: string;
+	} = $props();
 </script>
 
 <a class="card" href={url}>
@@ -47,7 +47,7 @@
 		font-family: var(--heading-font), sans-serif;
 	}
 	.no-img {
-    margin-top: 0;
+		margin-top: 0;
 	}
 	p {
 		color: var(--hint);

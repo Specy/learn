@@ -15,31 +15,31 @@ import remarkCallouts from './remarkCallouts.js';
 import rehypeMermaid from './rehypeMermaid.js';
 
 export type LinkResolver = {
-  note(target: string): string;
-  asset(target: string): string;
-  noteLabel(target: string): string | null;
+	note(target: string): string;
+	asset(target: string): string;
+	noteLabel(target: string): string | null;
 };
 
 export function createProcessor(resolve: LinkResolver) {
-  // `resolve` = { note(target):string, asset(target):string } link resolvers
-  return unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkMath)
-    .use(remarkObsidianLinks, resolve)   // [[x]] / ![[x]] BEFORE remark-rehype
-    .use(remarkCallouts)                  // > [!type] BEFORE remark-rehype
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw)
-    .use(rehypeKatex)
-    .use(rehypeSlug)
-    .use(rehypeAutolinkHeadings, { behavior: 'wrap' })
-    .use(rehypeMermaid)
-    .use(rehypeShiki, {
-      themes: { light: 'one-light', dark: 'one-dark-pro' },
-      fallbackLanguage: 'text',
-      defaultColor: false
-    })
-    .use(rehypeStringify, { allowDangerousHtml: true });
+	// `resolve` = { note(target):string, asset(target):string } link resolvers
+	return unified()
+		.use(remarkParse)
+		.use(remarkGfm)
+		.use(remarkMath)
+		.use(remarkObsidianLinks, resolve) // [[x]] / ![[x]] BEFORE remark-rehype
+		.use(remarkCallouts) // > [!type] BEFORE remark-rehype
+		.use(remarkRehype, { allowDangerousHtml: true })
+		.use(rehypeRaw)
+		.use(rehypeKatex)
+		.use(rehypeSlug)
+		.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
+		.use(rehypeMermaid)
+		.use(rehypeShiki, {
+			themes: { light: 'one-light', dark: 'one-dark-pro' },
+			fallbackLanguage: 'text',
+			defaultColor: false
+		})
+		.use(rehypeStringify, { allowDangerousHtml: true });
 }
 
 /**
@@ -50,12 +50,12 @@ export function createProcessor(resolve: LinkResolver) {
  * keeping the vault itself Obsidian-idiomatic.
  */
 export function normalizeBlockMath(md: string): string {
-  return md.replace(
-    /^[ \t]*\$\$[ \t]*([^\n]+?)[ \t]*\$\$[ \t]*$/gm,
-    (_m, body) => `$$\n${body}\n$$`,
-  );
+	return md.replace(
+		/^[ \t]*\$\$[ \t]*([^\n]+?)[ \t]*\$\$[ \t]*$/gm,
+		(_m, body) => `$$\n${body}\n$$`
+	);
 }
 
 export async function renderMarkdown(md: string, resolve: LinkResolver): Promise<string> {
-  return String(await createProcessor(resolve).process(normalizeBlockMath(md)));
+	return String(await createProcessor(resolve).process(normalizeBlockMath(md)));
 }

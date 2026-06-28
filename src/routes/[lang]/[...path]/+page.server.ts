@@ -5,7 +5,10 @@ import { LANGUAGES } from '$lib/languages';
 export const prerender = true;
 export const entries: EntryGenerator = async () => listAllRoutes();
 export const load: PageServerLoad = async ({ params }) => {
-  if (!(params.lang in LANGUAGES)) error(404, 'Unknown language');
-  try { return await renderNode(params.lang, params.path); }
-  catch { error(404, 'Not found'); }
+	if (!(params.lang in LANGUAGES)) error(404, 'Unknown language');
+	try {
+		return await renderNode(params.lang, params.path);
+	} catch {
+		error(404, 'Not found');
+	}
 };

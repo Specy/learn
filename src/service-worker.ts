@@ -15,47 +15,47 @@ const CACHE = `runtime-${version}`;
 const OFFLINE_URL = `${base}/offline`;
 
 sw.addEventListener('install', (event) => {
-  event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      await cache.add(OFFLINE_URL); // the one thing we precache
-      await sw.skipWaiting();
-    })()
-  );
+	event.waitUntil(
+		(async () => {
+			const cache = await caches.open(CACHE);
+			await cache.add(OFFLINE_URL); // the one thing we precache
+			await sw.skipWaiting();
+		})()
+	);
 });
 
 sw.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      for (const key of await caches.keys()) {
-        if (key !== CACHE) await caches.delete(key);
-      }
-      await sw.clients.claim();
-    })()
-  );
+	event.waitUntil(
+		(async () => {
+			for (const key of await caches.keys()) {
+				if (key !== CACHE) await caches.delete(key);
+			}
+			await sw.clients.claim();
+		})()
+	);
 });
 
 async function networkFirst(request: Request): Promise<Response> {
-  const cache = await caches.open(CACHE);
-  try {
-    const res = await fetch(request);
-    if (res && res.status === 200) cache.put(request, res.clone());
-    return res;
-  } catch (err) {
-    const cached = await cache.match(request);
-    if (cached) return cached;
-    if (request.mode === 'navigate') {
-      const offline = await cache.match(OFFLINE_URL);
-      if (offline) return offline;
-    }
-    throw err;
-  }
+	const cache = await caches.open(CACHE);
+	try {
+		const res = await fetch(request);
+		if (res && res.status === 200) cache.put(request, res.clone());
+		return res;
+	} catch (err) {
+		const cached = await cache.match(request);
+		if (cached) return cached;
+		if (request.mode === 'navigate') {
+			const offline = await cache.match(OFFLINE_URL);
+			if (offline) return offline;
+		}
+		throw err;
+	}
 }
 
 sw.addEventListener('fetch', (event) => {
-  const { request } = event;
-  if (request.method !== 'GET') return;
-  const url = new URL(request.url);
-  if (url.origin !== sw.location.origin) return; // leave cross-origin (fonts, etc.) alone
-  event.respondWith(networkFirst(request));
+	const { request } = event;
+	if (request.method !== 'GET') return;
+	const url = new URL(request.url);
+	if (url.origin !== sw.location.origin) return; // leave cross-origin (fonts, etc.) alone
+	event.respondWith(networkFirst(request));
 });

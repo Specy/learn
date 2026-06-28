@@ -1,32 +1,32 @@
 ---
-
 excalidraw-plugin: parsed
 tags: [excalidraw]
-
 ---
-==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠== You can decompress Drawing data with the command palette: 'Decompress current Excalidraw file'. For more info check in plugin settings under 'Saving'
 
+==⚠ Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠== You can decompress Drawing data with the command palette: 'Decompress current Excalidraw file'. For more info check in plugin settings under 'Saving'
 
 # Excalidraw Data
+
 ## Text Elements
+
 Ha 51 host + 1 host per la sotto rete, prendiamo una mask
 che riesce ad allocare 52 host ^UIwd5jtJ
 
-1) assegno un indirizzo
-alla sottorete (univoco alla rete), l'indirizzo 
-dove avere tutta la parte host con bit 0  ^aMhOrn1n
+1. assegno un indirizzo
+   alla sottorete (univoco alla rete), l'indirizzo
+   dove avere tutta la parte host con bit 0 ^aMhOrn1n
 
-2) assegno lo spazio di indirizzi 
-usati dalla rete per soddisfare
-gli host della sottorete ^Dp3b5Z8o
+2. assegno lo spazio di indirizzi
+   usati dalla rete per soddisfare
+   gli host della sottorete ^Dp3b5Z8o
 
-3) assegno un indirizzo per il broadcast,
-avrà tutti i bit host ad 1 ^a2f8r2Gm
+3. assegno un indirizzo per il broadcast,
+   avrà tutti i bit host ad 1 ^a2f8r2Gm
 
-Gli indirizzi rete devono 
+Gli indirizzi rete devono
 essere univoci ^20tMD9AR
 
-Come prima, ma dobbiamo assegnare 
+Come prima, ma dobbiamo assegnare
 solo 2 host, uno per ogni terminale
 del link (in questo caso R1 e R2) ^qW6lxOio
 
@@ -47,10 +47,13 @@ R2 ^6A6uQjRH
 L'ordine è arbitrario ^awzPKZ3C
 
 ## Embedded Files
+
 1bcdb28696a121c019ff6a93c6acc667bf7a79fd: [[Pasted Image 20241111091302_119.png]]
 
 %%
+
 ## Drawing
+
 ```compressed-json
 N4KAkARALgngDgUwgLgAQQQDwMYEMA2AlgCYBOuA7hADTgQBuCpAzoQPYB2KqATLZMzYBXUtiRoIACyhQ4zZAHoFAc0JRJQgEYA6bGwC2CgF7N6hbEcK4OCtptbErHALRY8RMpWdx8Q1TdIEfARcZgRmBShcZQUebQA2bQB2GjoghH0EDihmbgBtcDBQMBKIEm4IACs4ACV9YgBJfABlAAlmyooEAEEAFQAFZwAWZgBhAE5UkshYRArCfWikflLM
 
@@ -274,4 +277,5 @@ AcENgAehQZ3AE0BggJRsE7JZzYglw1kDkCwRSAZQDFAkUTQW1g9ZlaqNx+2PYEWrAQCBGUAly7DC1mdZ
 
 oGLnGAMufwBbx2Aex6gKYIGTBgAc5AkggAA=
 ```
+
 %%

@@ -1,131 +1,128 @@
 <script lang="ts">
-	import { tick } from "svelte"
-	import { fade, scale } from "svelte/transition"
-	import { page } from "$app/state"
-	import { goto } from "$app/navigation"
-	import { t } from "$lib/i18n"
-	import Icon from "$lib/components/Icon.svelte"
-	import { searchClient } from "$lib/search/searchClient.svelte"
-	import type { SearchContext, SearchResult } from "$lib/search/types"
+	import { tick } from 'svelte';
+	import { fade, scale } from 'svelte/transition';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { t } from '$lib/i18n';
+	import Icon from '$lib/components/Icon.svelte';
+	import { searchClient } from '$lib/search/searchClient.svelte';
+	import type { SearchContext, SearchResult } from '$lib/search/types';
 
-	let { open = $bindable(), lang = "it" }: { open: boolean; lang?: string } =
-		$props()
+	let { open = $bindable(), lang = 'it' }: { open: boolean; lang?: string } = $props();
 
-	let query = $state("")
-	let results = $state<SearchResult[]>([])
-	let selected = $state(0)
-	let inputEl = $state<HTMLInputElement | null>(null)
-	let listEl = $state<HTMLUListElement | null>(null)
+	let query = $state('');
+	let results = $state<SearchResult[]>([]);
+	let selected = $state(0);
+	let inputEl = $state<HTMLInputElement | null>(null);
+	let listEl = $state<HTMLUListElement | null>(null);
 
 	// Throttle (live updates while typing — leading + trailing, not debounced).
-	const THROTTLE_MS = 80
-	let throttleTimer: ReturnType<typeof setTimeout> | null = null
-	let lastRun = 0
-	let searchToken = 0
+	const THROTTLE_MS = 80;
+	let throttleTimer: ReturnType<typeof setTimeout> | null = null;
+	let lastRun = 0;
+	let searchToken = 0;
 
 	// Delay the spinner so a fast search (< 300ms) never flashes one.
-	const SPINNER_DELAY = 300
-	let showSpinner = $state(false)
-	let spinnerTimer: ReturnType<typeof setTimeout> | null = null
+	const SPINNER_DELAY = 300;
+	let showSpinner = $state(false);
+	let spinnerTimer: ReturnType<typeof setTimeout> | null = null;
 	$effect(() => {
 		if (searchClient.searching) {
 			if (!spinnerTimer && !showSpinner) {
 				spinnerTimer = setTimeout(() => {
-					showSpinner = true
-					spinnerTimer = null
-				}, SPINNER_DELAY)
+					showSpinner = true;
+					spinnerTimer = null;
+				}, SPINNER_DELAY);
 			}
 		} else {
 			if (spinnerTimer) {
-				clearTimeout(spinnerTimer)
-				spinnerTimer = null
+				clearTimeout(spinnerTimer);
+				spinnerTimer = null;
 			}
-			showSpinner = false
+			showSpinner = false;
 		}
-	})
-	const errored = $derived(searchClient.status === "error")
+	});
+	const errored = $derived(searchClient.status === 'error');
 
 	function currentContext(): SearchContext {
-		const segs = page.url.pathname.split("/").filter(Boolean)
+		const segs = page.url.pathname.split('/').filter(Boolean);
 		return {
-			lang: segs[0] || lang || "it",
-			course: segs[1] ?? "",
-			notePath: segs.slice(1).join("/"),
-		}
+			lang: segs[0] || lang || 'it',
+			course: segs[1] ?? '',
+			notePath: segs.slice(1).join('/')
+		};
 	}
 
 	async function runSearch() {
-		const q = query.trim()
+		const q = query.trim();
 		if (!q) {
-			results = []
-			return
+			results = [];
+			return;
 		}
-		const token = ++searchToken
-		const r = await searchClient.search(q, currentContext())
+		const token = ++searchToken;
+		const r = await searchClient.search(q, currentContext());
 		if (token === searchToken) {
-			results = r
-			selected = 0
+			results = r;
+			selected = 0;
 		}
 	}
 
 	function onInput() {
-		const now = performance.now()
-		const since = now - lastRun
+		const now = performance.now();
+		const since = now - lastRun;
 		if (since >= THROTTLE_MS) {
-			lastRun = now
-			void runSearch()
+			lastRun = now;
+			void runSearch();
 		} else if (!throttleTimer) {
 			throttleTimer = setTimeout(() => {
-				throttleTimer = null
-				lastRun = performance.now()
-				void runSearch()
-			}, THROTTLE_MS - since)
+				throttleTimer = null;
+				lastRun = performance.now();
+				void runSearch();
+			}, THROTTLE_MS - since);
 		}
 	}
 
 	async function scrollSelectedIntoView() {
-		await tick()
-		listEl
-			?.querySelector('[data-selected="true"]')
-			?.scrollIntoView({ block: "nearest" })
+		await tick();
+		listEl?.querySelector('[data-selected="true"]')?.scrollIntoView({ block: 'nearest' });
 	}
 
 	function move(delta: number) {
-		if (!results.length) return
-		selected = (selected + delta + results.length) % results.length
-		void scrollSelectedIntoView()
+		if (!results.length) return;
+		selected = (selected + delta + results.length) % results.length;
+		void scrollSelectedIntoView();
 	}
 
 	function onKeydown(e: KeyboardEvent) {
-		if (e.key === "ArrowDown") {
-			e.preventDefault()
-			move(1)
-		} else if (e.key === "ArrowUp") {
-			e.preventDefault()
-			move(-1)
-		} else if (e.key === "Enter") {
-			e.preventDefault()
-			const r = results[selected]
-			if (r) openResult(r)
-		} else if (e.key === "Escape") {
-			e.preventDefault()
-			close()
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			move(1);
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			move(-1);
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			const r = results[selected];
+			if (r) openResult(r);
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
+			close();
 		}
 	}
 
 	function openResult(r: SearchResult) {
-		close()
-		void goto(r.url)
+		close();
+		void goto(r.url);
 	}
 
 	function close() {
-		open = false
+		open = false;
 	}
 
 	function scopeLabel(r: SearchResult): string {
-		if (r.scope === "current") return t(lang, "search.scope.current")
-		if (r.scope === "same-course") return ""
-		return r.courseTitle || "—"
+		if (r.scope === 'current') return t(lang, 'search.scope.current');
+		if (r.scope === 'same-course') return '';
+		return r.courseTitle || '—';
 	}
 
 	// When opened: reset the previous search, warm the index, lock page scroll,
@@ -134,25 +131,25 @@
 	// open nor while the close animation plays. Overlay scrollbars (mobile)
 	// reserve no gutter, so there is nothing to shift there either.
 	$effect(() => {
-		if (!open) return
-		query = ""
-		results = []
-		selected = 0
-		searchToken++
+		if (!open) return;
+		query = '';
+		results = [];
+		selected = 0;
+		searchToken++;
 		if (throttleTimer) {
-			clearTimeout(throttleTimer)
-			throttleTimer = null
+			clearTimeout(throttleTimer);
+			throttleTimer = null;
 		}
 
-		searchClient.sync().catch(() => {})
-		const root = document.documentElement
-		const prevOverflow = root.style.overflow
-		root.style.overflow = "hidden"
-		void tick().then(() => inputEl?.focus())
+		searchClient.sync().catch(() => {});
+		const root = document.documentElement;
+		const prevOverflow = root.style.overflow;
+		root.style.overflow = 'hidden';
+		void tick().then(() => inputEl?.focus());
 		return () => {
-			root.style.overflow = prevOverflow
-		}
-	})
+			root.style.overflow = prevOverflow;
+		};
+	});
 </script>
 
 {#if open}
@@ -167,14 +164,14 @@
 		class="spotlight-wrap"
 		role="presentation"
 		onclick={(e) => {
-			if (e.target === e.currentTarget) close()
+			if (e.target === e.currentTarget) close();
 		}}
 	>
 		<div
 			class="spotlight"
 			role="dialog"
 			aria-modal="true"
-			aria-label={t(lang, "search.button")}
+			aria-label={t(lang, 'search.button')}
 			tabindex="-1"
 			transition:scale={{ duration: 160, start: 0.97 }}
 		>
@@ -187,7 +184,7 @@
 					onkeydown={onKeydown}
 					type="text"
 					class="search-input"
-					placeholder={t(lang, "search.placeholder")}
+					placeholder={t(lang, 'search.placeholder')}
 					autocomplete="off"
 					autocapitalize="off"
 					autocorrect="off"
@@ -206,23 +203,23 @@
 							<a
 								href={r.url}
 								class="result"
-								class:is-file={r.kind === "file"}
+								class:is-file={r.kind === 'file'}
 								class:selected={i === selected}
 								data-selected={i === selected}
 								role="option"
 								aria-selected={i === selected}
 								onclick={(e) => {
-									e.preventDefault()
-									openResult(r)
+									e.preventDefault();
+									openResult(r);
 								}}
 								onmouseenter={() => (selected = i)}
 							>
-								<span class="r-icon" class:accent={r.kind === "file"}>
-									<Icon name={r.kind === "file" ? "file" : "hash"} size={16} />
+								<span class="r-icon" class:accent={r.kind === 'file'}>
+									<Icon name={r.kind === 'file' ? 'file' : 'hash'} size={16} />
 								</span>
 								<span class="r-body">
 									<span class="r-head">
-										{#if r.kind === "file"}
+										{#if r.kind === 'file'}
 											<span class="r-title">{r.noteTitle}</span>
 										{:else}
 											<span class="r-crumb">
@@ -231,15 +228,14 @@
 												<span class="r-heading">{r.heading}</span>
 											</span>
 										{/if}
-										{#if scopeLabelText !== ""}
+										{#if scopeLabelText !== ''}
 											<span class="chip chip-{r.scope}">{scopeLabelText}</span>
 										{/if}
 									</span>
-									{#if r.kind !== "file" && (r.snippet.hit || r.snippet.after || r.snippet.before)}
+									{#if r.kind !== 'file' && (r.snippet.hit || r.snippet.after || r.snippet.before)}
 										<span class="r-snippet"
-											>{r.snippet.before}{#if r.snippet.hit}<mark
-													>{r.snippet.hit}</mark
-												>{/if}{r.snippet.after}</span
+											>{r.snippet.before}{#if r.snippet.hit}<mark>{r.snippet.hit}</mark>{/if}{r
+												.snippet.after}</span
 										>
 									{/if}
 								</span>
@@ -248,16 +244,14 @@
 					{:else}
 						{#if !searchClient.searching}
 							<li class="msg">
-								{errored
-									? t(lang, "search.unavailable")
-									: t(lang, "search.noResults")}
+								{errored ? t(lang, 'search.unavailable') : t(lang, 'search.noResults')}
 							</li>
 						{/if}
 					{/each}
 				</ul>
-				<div class="hint">{t(lang, "search.hint")}</div>
+				<div class="hint">{t(lang, 'search.hint')}</div>
 			{:else}
-				<div class="empty">{t(lang, "search.empty")}</div>
+				<div class="empty">{t(lang, 'search.empty')}</div>
 			{/if}
 		</div>
 	</div>

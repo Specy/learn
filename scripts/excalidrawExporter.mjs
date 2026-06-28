@@ -29,43 +29,43 @@ const BOOT_HTML = `<!DOCTYPE html><html><head>
  * Throws if Chromium cannot launch or the library fails to load within 60s.
  */
 export async function makeExporter() {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
+	const browser = await chromium.launch();
+	const page = await browser.newPage();
 
-  // Load Excalidraw from esm.sh; waitUntil:'networkidle' lets the module finish loading.
-  await page.setContent(BOOT_HTML, { waitUntil: 'networkidle' });
-  await page.waitForFunction('window.ExcalidrawLib?.exportToSvg', { timeout: 60000 });
+	// Load Excalidraw from esm.sh; waitUntil:'networkidle' lets the module finish loading.
+	await page.setContent(BOOT_HTML, { waitUntil: 'networkidle' });
+	await page.waitForFunction('window.ExcalidrawLib?.exportToSvg', { timeout: 60000 });
 
-  /**
-   * Export a single scene as SVG.
-   * @param {object} scene  Parsed Excalidraw scene (from readExcalidrawScene)
-   * @param {{ dark: boolean }} opts
-   * @returns {Promise<string|null>}  SVG XML string, or null if there are no live elements
-   */
-  async function exportScene(scene, { dark }) {
-    return page.evaluate(
-      async ({ scene, dark }) => {
-        // Filter deleted elements before export
-        const live = (scene.elements || []).filter((e) => !e.isDeleted);
-        if (live.length === 0) return null;
+	/**
+	 * Export a single scene as SVG.
+	 * @param {object} scene  Parsed Excalidraw scene (from readExcalidrawScene)
+	 * @param {{ dark: boolean }} opts
+	 * @returns {Promise<string|null>}  SVG XML string, or null if there are no live elements
+	 */
+	async function exportScene(scene, { dark }) {
+		return page.evaluate(
+			async ({ scene, dark }) => {
+				// Filter deleted elements before export
+				const live = (scene.elements || []).filter((e) => !e.isDeleted);
+				if (live.length === 0) return null;
 
-        const svg = await window.ExcalidrawLib.exportToSvg({
-          elements: live,
-          appState: {
-            ...scene.appState,
-            exportBackground: true,
-            exportWithDarkMode: dark
-          },
-          files: scene.files || {}
-        });
-        return new XMLSerializer().serializeToString(svg);
-      },
-      { scene, dark }
-    );
-  }
+				const svg = await window.ExcalidrawLib.exportToSvg({
+					elements: live,
+					appState: {
+						...scene.appState,
+						exportBackground: true,
+						exportWithDarkMode: dark
+					},
+					files: scene.files || {}
+				});
+				return new XMLSerializer().serializeToString(svg);
+			},
+			{ scene, dark }
+		);
+	}
 
-  return {
-    exportScene,
-    close: () => browser.close()
-  };
+	return {
+		exportScene,
+		close: () => browser.close()
+	};
 }

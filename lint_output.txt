@@ -1,0 +1,142 @@
+
+> lint:fix
+> eslint --fix
+
+
+C:\Users\specy\Desktop\progetti\learn\scripts\buildExcalidraw.mjs
+  54:6  error  The value assigned to 'exporter' is not used in subsequent statements  no-useless-assignment
+
+C:\Users\specy\Desktop\progetti\learn\scripts\readExcalidrawScene.test.mjs
+  1:32  error  'afterEach' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\scripts\searchIndex.mjs
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Authors.svelte
+  10:23  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Background.svelte
+   18:6  error  'multiplier' is assigned a value but never used   @typescript-eslint/no-unused-vars
+   34:6  error  'animFrameId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  208:9  error  '_theme' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  210:9  error  '_pathname' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Breadcrumbs.svelte
+  29:3   error  Each block should have a key            svelte/require-each-key
+  38:23  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Button.svelte
+  16:4  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\CourseCard.svelte
+  17:17  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Footer.svelte
+  10:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:6   error  Unexpected href link without resolve()    svelte/no-navigation-without-resolve
+  20:6   error  Unexpected href link without resolve()    svelte/no-navigation-without-resolve
+  23:6   error  Unexpected href link without resolve()    svelte/no-navigation-without-resolve
+  27:7   error  Unexpected href link without resolve()    svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\LanguageSwitcher.svelte
+  22:2  error  Each block should have a key            svelte/require-each-key
+  24:4  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Logo.svelte
+  9:2  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Mermaid.svelte
+  40:23  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\RenderedMarkdown.svelte
+  14:9   error  '_html' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  48:32  error  `{@html}` can lead to XSS attack            svelte/no-at-html-tags
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\SEO.svelte
+  74:2  error  Each block should have a key  svelte/require-each-key
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\SearchModal.svelte
+  115:13  error  Unexpected goto() call without resolve()  svelte/no-navigation-without-resolve
+  204:9   error  Unexpected href link without resolve()    svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Sidebar.svelte
+  53:5  error  Each block should have a key  svelte/require-each-key
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\SidebarTree.svelte
+  56:7  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+  65:5  error  Each block should have a key            svelte/require-each-key
+  75:3  error  Unexpected href link without resolve()  svelte/no-navigation-without-resolve
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\components\Toc.svelte
+  12:3  error  Each block should have a key  svelte/require-each-key
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\index.ts
+  121:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\markdown.test.ts
+  8:14  error  '_t' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\remarkCallouts.test.ts
+  7:14  error  '_t' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\remarkCallouts.ts
+   3:33  error  'Paragraph' is defined but never used     @typescript-eslint/no-unused-vars
+  90:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  91:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\remarkObsidianLinks.test.ts
+  9:14  error  '_t' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\remarkObsidianLinks.ts
+   4:36  error  'EXCALIDRAW_SENTINEL_PREFIX' is defined but never used  @typescript-eslint/no-unused-vars
+  22:16  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  23:30  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  23:70  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  26:15  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\tree.test.ts
+  63:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\tree.ts
+    8:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\types.ts
+  11:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\content\withLang.test.ts
+  46:16  error  '_t' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\lib\search\rerank.test.ts
+  26:7  error  'ctxCourse' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\routes\+layout.svelte
+  30:9  error  '_path' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\specy\Desktop\progetti\learn\src\routes\[lang]\+page.svelte
+  17:3  error  Each block should have a key  svelte/require-each-key
+
+C:\Users\specy\Desktop\progetti\learn\src\routes\[lang]\[...path]\+page.svelte
+  30:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:5   error  Each block should have a key              svelte/require-each-key
+
+C:\Users\specy\Desktop\progetti\learn\vite-plugin-search-index.js
+  2:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+C:\Users\specy\Desktop\progetti\learn\vite-plugin-vault.js
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+C:\Users\specy\Desktop\progetti\learn\vite.config.js
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+Γ£û 65 problems (65 errors, 0 warnings)
+

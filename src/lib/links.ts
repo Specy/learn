@@ -9,5 +9,5 @@ export const DONATE = 'https://ko-fi.com/specy';
  * vault dir (notes/it), so the path within the notes repo is `it/<relPath>`.
  */
 export function editUrl(relPath: string): string {
-  return `${REPO_NOTES}/edit/main/${encodeURI(`it/${relPath}`)}`;
+	return `${REPO_NOTES}/edit/main/${encodeURI(`it/${relPath}`)}`;
 }

@@ -11,11 +11,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT_DIR = path.resolve(__dirname, 'notes', 'it');
 
 export default defineConfig({
-  plugins: [vaultPlugin(), searchIndexPlugin(), sveltekit()],
-  server: { fs: { allow: [__dirname, VAULT_DIR] } },
-  test: {
-    include: ['src/**/*.{test,spec}.{js,ts,mjs}', '*.{test,spec}.{js,ts,mjs}', 'scripts/**/*.{test,spec}.{js,ts,mjs}'],
-    environment: 'node',
-    testTimeout: 30000
-  }
+	plugins: [vaultPlugin(), searchIndexPlugin(), sveltekit()],
+	server: { fs: { allow: [__dirname, VAULT_DIR] } },
+	test: {
+		include: [
+			'src/**/*.{test,spec}.{js,ts,mjs}',
+			'*.{test,spec}.{js,ts,mjs}',
+			'scripts/**/*.{test,spec}.{js,ts,mjs}'
+		],
+		environment: 'node',
+		testTimeout: 30000
+	}
 });
