@@ -16,22 +16,22 @@ const PREFIX = /^(\d+)-(.+)$/;
 
 /** `NN-slug` -> `slug` (mirror of parseEntryName). */
 export function stripPrefix(name) {
-  const m = PREFIX.exec(name);
-  return m ? m[2] : name;
+	const m = PREFIX.exec(name);
+	return m ? m[2] : name;
 }
 
 /** Strip inline markdown from a single line (heading text / label). */
 export function inlineText(s) {
-  return s
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')      // images
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // links -> text
-    .replace(/`([^`]+)`/g, '$1')               // inline code
-    .replace(/(\*\*|__)(.*?)\1/g, '$2')        // bold
-    .replace(/(\*|_)(.*?)\1/g, '$2')           // italic
-    .replace(/\$([^$]+)\$/g, '$1')             // inline math
-    .replace(/<[^>]+>/g, '')                   // html
-    .replace(/\s+/g, ' ')
-    .trim();
+	return s
+		.replace(/!\[[^\]]*\]\([^)]*\)/g, '') // images
+		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links -> text
+		.replace(/`([^`]+)`/g, '$1') // inline code
+		.replace(/(\*\*|__)(.*?)\1/g, '$2') // bold
+		.replace(/(\*|_)(.*?)\1/g, '$2') // italic
+		.replace(/\$([^$]+)\$/g, '$1') // inline math
+		.replace(/<[^>]+>/g, '') // html
+		.replace(/\s+/g, ' ')
+		.trim();
 }
 
 /**
@@ -39,22 +39,22 @@ export function inlineText(s) {
  * Mirrors src/lib/content/plainText.ts toPlainText.
  */
 export function mdToText(md) {
-  return md
-    .replace(/```[\s\S]*?```/g, '')                 // fenced code
-    .replace(/^(?: {4}|\t).+$/gm, '')               // indented code
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')           // images
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')        // links -> text
-    .replace(/^#{1,6}\s+/gm, '')                    // heading hashes
-    .replace(/(\*\*|__)(.*?)\1/g, '$2')             // bold
-    .replace(/(\*|_)(.*?)\1/g, '$2')               // italic
-    .replace(/`[^`]+`/g, '')                        // inline code
-    .replace(/^>\s*/gm, '')                         // blockquote markers
-    .replace(/^[-*_]{3,}\s*$/gm, '')               // hr
-    .replace(/<[^>]+>/g, '')                        // html
-    .replace(/\$\$?([^$]*)\$\$?/g, '$1')           // math delimiters
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n{2,}/g, '\n')
-    .trim();
+	return md
+		.replace(/```[\s\S]*?```/g, '') // fenced code
+		.replace(/^(?: {4}|\t).+$/gm, '') // indented code
+		.replace(/!\[[^\]]*\]\([^)]*\)/g, '') // images
+		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links -> text
+		.replace(/^#{1,6}\s+/gm, '') // heading hashes
+		.replace(/(\*\*|__)(.*?)\1/g, '$2') // bold
+		.replace(/(\*|_)(.*?)\1/g, '$2') // italic
+		.replace(/`[^`]+`/g, '') // inline code
+		.replace(/^>\s*/gm, '') // blockquote markers
+		.replace(/^[-*_]{3,}\s*$/gm, '') // hr
+		.replace(/<[^>]+>/g, '') // html
+		.replace(/\$\$?([^$]*)\$\$?/g, '$1') // math delimiters
+		.replace(/[ \t]+/g, ' ')
+		.replace(/\n{2,}/g, '\n')
+		.trim();
 }
 
 /**
@@ -69,39 +69,39 @@ export function mdToText(md) {
  * section. Sections with no heading and no text are dropped.
  */
 export function splitSections(md) {
-  const slugger = new GithubSlugger();
-  const lines = md.split(/\r?\n/);
-  let fenced = false;
-  const sections = [];
-  let current = { heading: null, anchor: '', lines: [] };
+	const slugger = new GithubSlugger();
+	const lines = md.split(/\r?\n/);
+	let fenced = false;
+	const sections = [];
+	let current = { heading: null, anchor: '', lines: [] };
 
-  for (const line of lines) {
-    if (/^\s*(```|~~~)/.test(line)) {
-      fenced = !fenced;
-      current.lines.push(line);
-      continue;
-    }
-    const h = !fenced && /^(#{1,6})\s+(.*\S)\s*$/.exec(line);
-    if (h) {
-      const depth = h[1].length;
-      const text = inlineText(h[2]);
-      const anchor = slugger.slug(text); // advance for ALL headings
-      if (depth >= 1 && depth <= 4) {
-        sections.push(current);
-        current = { heading: text, anchor, lines: [] };
-        continue;
-      }
-      // h5 / h6: keep as body of the current section.
-      current.lines.push(line);
-    } else {
-      current.lines.push(line);
-    }
-  }
-  sections.push(current);
+	for (const line of lines) {
+		if (/^\s*(```|~~~)/.test(line)) {
+			fenced = !fenced;
+			current.lines.push(line);
+			continue;
+		}
+		const h = !fenced && /^(#{1,6})\s+(.*\S)\s*$/.exec(line);
+		if (h) {
+			const depth = h[1].length;
+			const text = inlineText(h[2]);
+			const anchor = slugger.slug(text); // advance for ALL headings
+			if (depth >= 1 && depth <= 4) {
+				sections.push(current);
+				current = { heading: text, anchor, lines: [] };
+				continue;
+			}
+			// h5 / h6: keep as body of the current section.
+			current.lines.push(line);
+		} else {
+			current.lines.push(line);
+		}
+	}
+	sections.push(current);
 
-  return sections
-    .map((s) => ({ heading: s.heading, anchor: s.anchor, text: mdToText(s.lines.join('\n')) }))
-    .filter((s) => s.heading !== null || s.text.length > 0);
+	return sections
+		.map((s) => ({ heading: s.heading, anchor: s.anchor, text: mdToText(s.lines.join('\n')) }))
+		.filter((s) => s.heading !== null || s.text.length > 0);
 }
 
 /**
@@ -114,79 +114,79 @@ export function splitSections(md) {
  * the `/{lang}/` prefix is added at search time from the active context.
  */
 export function buildSearchIndex(files) {
-  // course slug -> display title, from "<course>/index.md"
-  const courseTitle = {};
-  for (const f of files) {
-    const parts = f.relPath.split('/');
-    if (parts.length === 2 && /^index\.md$/i.test(parts[1])) {
-      const slug = stripPrefix(parts[0]);
-      courseTitle[slug] = (f.frontmatter && f.frontmatter.title) || slug;
-    }
-  }
+	// course slug -> display title, from "<course>/index.md"
+	const courseTitle = {};
+	for (const f of files) {
+		const parts = f.relPath.split('/');
+		if (parts.length === 2 && /^index\.md$/i.test(parts[1])) {
+			const slug = stripPrefix(parts[0]);
+			courseTitle[slug] = (f.frontmatter && f.frontmatter.title) || slug;
+		}
+	}
 
-  const entries = [];
-  let id = 0;
+	const entries = [];
+	let id = 0;
 
-  for (const f of files) {
-    const parts = f.relPath.split('/');
-    const fileName = parts[parts.length - 1];
-    if (/^index\.md$/i.test(fileName)) continue; // folder index, not a note
+	for (const f of files) {
+		const parts = f.relPath.split('/');
+		const fileName = parts[parts.length - 1];
+		if (/^index\.md$/i.test(fileName)) continue; // folder index, not a note
 
-    const segs = parts.map(stripPrefix);
-    segs[segs.length - 1] = stripPrefix(fileName.replace(/\.md$/i, ''));
-    const notePath = segs.join('/');
-    const course = segs.length > 1 ? segs[0] : '';
-    const cTitle = course ? courseTitle[course] || course : '';
+		const segs = parts.map(stripPrefix);
+		segs[segs.length - 1] = stripPrefix(fileName.replace(/\.md$/i, ''));
+		const notePath = segs.join('/');
+		const course = segs.length > 1 ? segs[0] : '';
+		const cTitle = course ? courseTitle[course] || course : '';
 
-    const fm = f.frontmatter || {};
-    const noteTitle = fm.title || segs[segs.length - 1];
-    const description = fm.description || '';
+		const fm = f.frontmatter || {};
+		const noteTitle = fm.title || segs[segs.length - 1];
+		const description = fm.description || '';
 
-    const sections = splitSections(f.content || '');
-    const intro = sections.find((s) => s.heading === null);
-    const headed = sections.filter((s) => s.heading !== null);
+		const sections = splitSections(f.content || '');
+		const intro = sections.find((s) => s.heading === null);
+		const headed = sections.filter((s) => s.heading !== null);
 
-    // Fold a leading "# <Note Title>" heading (a title repeat) into the file
-    // entry rather than emitting a redundant section for it.
-    const norm = (x) => x.trim().toLowerCase();
-    let introText = intro ? intro.text : '';
-    let startIdx = 0;
-    if (headed.length && norm(headed[0].heading) === norm(noteTitle)) {
-      introText = [introText, headed[0].text].filter(Boolean).join(' ');
-      startIdx = 1;
-    }
+		// Fold a leading "# <Note Title>" heading (a title repeat) into the file
+		// entry rather than emitting a redundant section for it.
+		const norm = (x) => x.trim().toLowerCase();
+		let introText = intro ? intro.text : '';
+		let startIdx = 0;
+		if (headed.length && norm(headed[0].heading) === norm(noteTitle)) {
+			introText = [introText, headed[0].text].filter(Boolean).join(' ');
+			startIdx = 1;
+		}
 
-    // One `file` entry: matched on title/filename + description + intro text.
-    entries.push({
-      id: id++,
-      kind: 'file',
-      course,
-      courseTitle: cTitle,
-      notePath,
-      noteTitle,
-      heading: null,
-      anchor: '',
-      text: [noteTitle, segs[segs.length - 1].replace(/-/g, ' '), description, introText]
-        .filter(Boolean)
-        .join(' — ')
-    });
+		// One `file` entry: matched on title/filename + description + intro text.
+		entries.push({
+			id: id++,
+			kind: 'file',
+			course,
+			courseTitle: cTitle,
+			notePath,
+			noteTitle,
+			heading: null,
+			anchor: '',
+			text: [noteTitle, segs[segs.length - 1].replace(/-/g, ' '), description, introText]
+				.filter(Boolean)
+				.join(' — ')
+		});
 
-    // One `section` entry per h1-h4 heading (minus the folded title heading).
-    for (let i = startIdx; i < headed.length; i++) {
-      const s = headed[i];
-      entries.push({
-        id: id++,
-        kind: 'section',
-        course,
-        courseTitle: cTitle,
-        notePath,
-        noteTitle,
-        heading: s.heading,
-        anchor: s.anchor,
-        text: s.text
-      });
-    }
-  }
+		// One `section` entry per h1-h4 heading (minus the folded title heading).
+		for (let i = startIdx; i < headed.length; i++) {
+			const s = headed[i];
+			entries.push({
+				id: id++,
+				kind: 'section',
+				course,
+				courseTitle: cTitle,
+				notePath,
+				noteTitle,
+				heading: s.heading,
+				anchor: s.anchor,
+				text: s.text
+			});
+		}
+	}
 
-  return entries;
+	return entries;
 }

@@ -2,9 +2,9 @@ version: 2
 updates:
   # Backstop: if the instant cross-repo trigger ever misses, Dependabot opens a
   # PR when the notes submodule falls behind its tracked branch (main).
-  - package-ecosystem: "gitsubmodule"
-    directory: "/"
+  - package-ecosystem: 'gitsubmodule'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     commit-message:
-      prefix: "chore"
+      prefix: 'chore'

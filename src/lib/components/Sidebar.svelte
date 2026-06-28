@@ -1,37 +1,37 @@
 <script lang="ts">
-	import { page } from "$app/state"
-	import { fade } from "svelte/transition"
-	import { files } from "virtual:vault"
-	import { buildTree } from "$lib/content/tree"
-	import SidebarTree from "./SidebarTree.svelte"
+	import { page } from '$app/state';
+	import { fade } from 'svelte/transition';
+	import { files } from 'virtual:vault';
+	import { buildTree } from '$lib/content/tree';
+	import SidebarTree from './SidebarTree.svelte';
 
-	let { open = $bindable(), lang }: { open: boolean; lang: string } = $props()
+	let { open = $bindable(), lang }: { open: boolean; lang: string } = $props();
 
-	const rootNode = buildTree(files)
+	const rootNode = buildTree(files);
 
 	// Parse path to pass to children for highlighting
-	const pathname = $derived(page.url.pathname)
-	const segments = $derived(pathname.split("/").filter(Boolean))
-	const activePath = $derived(segments.slice(1).join("/"))
+	const pathname = $derived(page.url.pathname);
+	const segments = $derived(pathname.split('/').filter(Boolean));
+	const activePath = $derived(segments.slice(1).join('/'));
 
 	// Sort course children putting the active course first
 	const sortedChildren = $derived(
 		(() => {
-			const children = [...rootNode.children]
-			const courseSlug = activePath.split("/")[0]
+			const children = [...rootNode.children];
+			const courseSlug = activePath.split('/')[0];
 			if (courseSlug) {
-				const idx = children.findIndex((c) => c.slug === courseSlug)
+				const idx = children.findIndex((c) => c.slug === courseSlug);
 				if (idx > 0) {
-					const [activeItem] = children.splice(idx, 1)
-					children.unshift(activeItem)
+					const [activeItem] = children.splice(idx, 1);
+					children.unshift(activeItem);
 				}
 			}
-			return children
-		})(),
-	)
+			return children;
+		})()
+	);
 
 	function closeSidebar() {
-		open = false
+		open = false;
 	}
 </script>
 
@@ -52,12 +52,7 @@
 			<ul class="root-list">
 				{#each sortedChildren as child}
 					<li>
-						<SidebarTree
-							node={child}
-							{lang}
-							{activePath}
-							onSelect={closeSidebar}
-						/>
+						<SidebarTree node={child} {lang} {activePath} onSelect={closeSidebar} />
 					</li>
 				{/each}
 			</ul>
@@ -98,12 +93,6 @@
 
 	.sidebar.open {
 		transform: translateX(0);
-	}
-	.sidebar-title {
-		font-family: var(--heading-font), sans-serif;
-		font-weight: 800;
-		font-size: 1.25rem;
-		color: var(--background-text);
 	}
 
 	/* Content area (scrollable) */
