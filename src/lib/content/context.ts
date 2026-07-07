@@ -1,5 +1,5 @@
 // app/src/lib/content/context.ts
-import { buildTree, getNodeByPath, listRoutes } from './tree';
+import { buildTree, getNodeByPath, listRoutes, groupChildren } from './tree';
 import type { RawFile, FolderNode, NoteNode, Author } from './types';
 import type { LinkResolver } from './markdown';
 
@@ -129,6 +129,22 @@ export function siblings(root: FolderNode, notePath: string) {
 		prev: i > 0 ? list[i - 1] : null,
 		next: i < list.length - 1 ? list[i + 1] : null
 	};
+}
+
+/**
+ * Position of a note within its immediate parent folder — the "current folder".
+ * Reuses `groupChildren(...).all`, the same ordered child list the folder
+ * overview renders, so the pill's number matches that listing. Returns a
+ * 1-based `index` and the sibling `total`, or null when the parent can't be
+ * located.
+ */
+export function folderPosition(root: FolderNode, notePath: string) {
+	const parent = getNodeByPath(root, notePath.split('/').slice(0, -1));
+	if (!parent || parent.kind !== 'folder') return null;
+	const all = groupChildren(parent).all;
+	const index = all.findIndex((c) => c.path === notePath);
+	if (index === -1) return null;
+	return { index: index + 1, total: all.length };
 }
 
 /**

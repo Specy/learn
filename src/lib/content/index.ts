@@ -1,19 +1,18 @@
 // app/src/lib/content/index.ts
 import { files, assets } from 'virtual:vault';
-import readingTime from 'reading-time';
 import {
 	buildContext,
 	getNodeByPath,
 	listRoutes,
 	extractToc,
 	siblings,
+	folderPosition,
 	breadcrumbsFor,
 	effectiveAuthors
 } from './context';
 import { groupChildren } from './tree';
 import type { Author, FolderNode, ContentNode } from './types';
 import { renderMarkdown } from './markdown';
-import { toPlainText } from './plainText';
 import { LANGUAGES } from '$lib/languages';
 import { t } from '$lib/i18n';
 import type { Context } from './context';
@@ -63,8 +62,8 @@ export async function renderNode(lang: string, path: string) {
 		};
 	}
 	const html = await renderMarkdown(node.content, resolve);
-	const stats = readingTime(toPlainText(node.content));
 	const sib = siblings(c.root, node.path);
+	const lecturePos = folderPosition(c.root, node.path);
 	const noteNode = {
 		...node,
 		content: '',
@@ -80,7 +79,7 @@ export async function renderNode(lang: string, path: string) {
 		authors,
 		html,
 		toc: extractToc(html),
-		readingText: stats.text,
+		lecturePos,
 		prev: sib.prev && { title: sib.prev.title, path: `/${lang}/${sib.prev.path}` },
 		next: sib.next && { title: sib.next.title, path: `/${lang}/${sib.next.path}` },
 		breadcrumbs

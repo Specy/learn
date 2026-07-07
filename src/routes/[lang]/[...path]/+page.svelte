@@ -53,7 +53,9 @@
 {#if data.kind === 'folder'}
 	<article class="article">
 		<div class="crumbs-row">
-			<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
+			<div class="crumbs-left">
+				<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
+			</div>
 			<Authors authors={data.authors} />
 		</div>
 		<header class="hero">
@@ -104,11 +106,22 @@
 	<article class="article article-lecture">
 		<div class="crumbs-row">
 			<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
-			<Authors authors={data.authors} />
+			{#if data.lecturePos && data.lecturePos.total > 1}
+				<span
+					class="lecture-pos"
+					aria-label={`${t(data.lang, 'note.lecture')} ${data.lecturePos.index}/${
+						data.lecturePos.total
+					}`}
+				>
+					{data.lecturePos.index} / {data.lecturePos.total}
+				</span>
+			{/if}
+			<div style="margin-left: auto;">
+				<Authors authors={data.authors} />
+			</div>
 		</div>
 		<header class="hero">
 			<h1 class="main-header">{data.node.title}</h1>
-			<p class="hero-meta">{data.readingText}</p>
 			<div class="hero-row">
 				{#if data.node.description}<p class="hero-desc">
 						{data.node.description}
@@ -126,20 +139,45 @@
 {/if}
 
 <style>
-	/* Breadcrumbs on the left, authors on the right; when tight the authors wrap
-	   directly below the breadcrumbs (both share the row's left edge). */
+	/* Breadcrumbs (+ lecture pill) grow on the left; authors keep their own column
+	   pinned to the right at every width. The left group wraps internally — the
+	   pill drops below the breadcrumbs — but never pushes authors to a new line. */
 	.crumbs-row {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem 1rem;
+		gap: 0.5rem 0.8rem;
 		padding: 0 1rem;
 	}
 	.hero-row {
 		display: flex;
 		justify-content: space-between;
 		flex-wrap: wrap;
+	}
+	/* Breadcrumbs + the lecture-position pill, grouped on the left; the pill sits
+	   just right of the breadcrumbs and wraps below them when space is tight.
+	   min-width:0 keeps the breadcrumb ellipsis working inside the wrapper. */
+	.crumbs-left {
+		flex: 1 1 auto;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem 0.8rem;
+		min-width: 0;
+	}
+	/* "current lecture / total in this folder" — a small accent pill sized to sit
+	   inline with the breadcrumb pill. */
+	.lecture-pos {
+		flex: none;
+		font-family: var(--heading-font, sans-serif);
+		font-weight: 700;
+		font-size: 0.82rem;
+		letter-spacing: 0.02em;
+		white-space: nowrap;
+		color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		padding: 0.3rem 0.7rem;
+		border-radius: 999px;
 	}
 	.list {
 		display: flex;

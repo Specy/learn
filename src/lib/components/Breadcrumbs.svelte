@@ -51,6 +51,7 @@
 		   min-width:0 lets the nav shrink in the flex row so the ol can clip and
 		   the current crumb ellipsizes instead of overflowing. */
 		min-width: 0;
+		max-width: 36.5rem;
 		padding: 0;
 	}
 	/* One continuous pill: rounded outer ends (overflow clips first/last). */
