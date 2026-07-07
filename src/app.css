@@ -513,13 +513,6 @@ html[data-theme='dark'] .excalidraw-dark {
 	color: var(--background-text);
 }
 
-.hero-meta {
-	font-family: var(--heading-font), sans-serif;
-	font-size: 1.3rem;
-	color: var(--muted);
-	margin: 0.8rem 0 0;
-}
-
 .hero-desc {
 	font-family: var(--paragraph-font), serif;
 	font-size: 1.4rem;
@@ -560,7 +553,6 @@ html[data-theme='dark'] .excalidraw-dark {
 		font-size: 2.3rem;
 	}
 
-	.hero-meta,
 	.hero-desc {
 		font-size: 1.1rem;
 	}
