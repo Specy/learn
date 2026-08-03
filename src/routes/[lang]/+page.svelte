@@ -11,7 +11,7 @@
 
 <section class="article">
 	<header
-	    class="hero"
+		class="hero"
 		style="display: flex; flex-direction: column; gap: 2rem; align-items: center;"
 	>
 		<h1 class="main-header">{t(data.lang, 'home.prompt')}</h1>
@@ -43,9 +43,9 @@
 		margin-top: 1rem;
 	}
 
-	.search-row{
-	    display: flex;
-	    gap: 1rem;
+	.search-row {
+		display: flex;
+		gap: 1rem;
 		width: 100%;
 		justify-content: center;
 	}
