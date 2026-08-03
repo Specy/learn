@@ -1,8 +1,15 @@
 // app/src/lib/content/tree.test.ts
 import { describe, it, expect } from 'vitest';
-import { buildTree, getNodeByPath, listRoutes, groupChildren, parseAuthors } from './tree';
+import {
+	buildTree,
+	getNodeByPath,
+	listRoutes,
+	groupChildren,
+	parseAuthors,
+	parseTags
+} from './tree';
 import { effectiveAuthors } from './context';
-import type { RawFile, FolderNode } from './types';
+import type { RawFile, FolderNode, NoteNode } from './types';
 
 const files: RawFile[] = [
 	{
@@ -147,5 +154,75 @@ describe('authors', () => {
 			{ relPath: '01-c/01-x.md', frontmatter: { title: 'X' }, content: '' }
 		]);
 		expect(effectiveAuthors(root2, 'c/x')).toEqual([]);
+	});
+});
+
+describe('folder levels', () => {
+	const levelled = buildTree([
+		{ relPath: '01-info/index.md', frontmatter: { title: 'Informatica' }, content: '' },
+		{ relPath: '01-info/01-reti/index.md', frontmatter: { title: 'Reti' }, content: '' },
+		{ relPath: '01-info/01-reti/01-parte/index.md', frontmatter: { title: 'Parte' }, content: '' },
+		{ relPath: '01-info/01-reti/01-parte/01-tcp.md', frontmatter: { title: 'TCP' }, content: '' }
+	]);
+
+	it('labels folders cdl → course → module by depth', () => {
+		expect(levelled.level).toBe('root');
+		expect((getNodeByPath(levelled, ['info']) as FolderNode).level).toBe('cdl');
+		expect((getNodeByPath(levelled, ['info', 'reti']) as FolderNode).level).toBe('course');
+		expect((getNodeByPath(levelled, ['info', 'reti', 'parte']) as FolderNode).level).toBe('module');
+	});
+});
+
+describe('tags', () => {
+	it('parseTags builds a year pill plus free-form pills, in order', () => {
+		expect(parseTags({})).toBeUndefined();
+		expect(parseTags({ year: 2 })).toEqual([{ kind: 'year', year: 2 }]);
+		expect(parseTags({ year: '3' })).toEqual([{ kind: 'year', year: 3 }]);
+		expect(parseTags({ year: 1, tags: ['Obbligatorio', '12 CFU'] })).toEqual([
+			{ kind: 'year', year: 1 },
+			{ kind: 'plain', label: 'Obbligatorio' },
+			{ kind: 'plain', label: '12 CFU' }
+		]);
+	});
+
+	it('parseTags accepts a comma-separated string and drops blanks', () => {
+		expect(parseTags({ tags: 'a, b ,, c' })).toEqual([
+			{ kind: 'plain', label: 'a' },
+			{ kind: 'plain', label: 'b' },
+			{ kind: 'plain', label: 'c' }
+		]);
+	});
+
+	it('parseTags ignores a non-numeric year and leaves topics/keywords alone', () => {
+		expect(parseTags({ year: 'primo' })).toBeUndefined();
+		expect(parseTags({ topics: ['seo'], keywords: ['seo'] })).toBeUndefined();
+	});
+
+	it('attaches tags to folders and notes from frontmatter', () => {
+		const r = buildTree([
+			{
+				relPath: '01-info/index.md',
+				frontmatter: { title: 'Informatica' },
+				content: ''
+			},
+			{
+				relPath: '01-info/01-reti/index.md',
+				frontmatter: { title: 'Reti', year: 3, tags: ['Obbligatorio'] },
+				content: ''
+			},
+			{
+				relPath: '01-info/01-reti/01-tcp.md',
+				frontmatter: { title: 'TCP', tags: ['esame'] },
+				content: ''
+			}
+		]);
+		expect((getNodeByPath(r, ['info', 'reti']) as FolderNode).tags).toEqual([
+			{ kind: 'year', year: 3 },
+			{ kind: 'plain', label: 'Obbligatorio' }
+		]);
+		expect((getNodeByPath(r, ['info', 'reti', 'tcp']) as NoteNode).tags).toEqual([
+			{ kind: 'plain', label: 'esame' }
+		]);
+		expect((getNodeByPath(r, ['info']) as FolderNode).tags).toBeUndefined();
 	});
 });

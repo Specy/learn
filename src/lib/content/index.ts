@@ -132,9 +132,10 @@ function prefixGroups(
 		image: n.image ? resolve.asset(n.image) : undefined,
 		type: n.type,
 		kind: n.kind,
+		tags: n.tags,
 		url: `/${lang}/${n.path}`
 	});
-	// `modules` (folders only) feeds the homepage course grid; `contents` is every
+	// `modules` (folders only) feeds the homepage CDL grid; `contents` is every
 	// child in natural order for the unified course/module list.
 	return { modules: g.modules.map(map), contents: g.all.map(map) };
 }

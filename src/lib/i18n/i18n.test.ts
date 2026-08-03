@@ -9,6 +9,13 @@ describe('i18n', () => {
 		expect(t('en', 'nav.home')).toBe(t('it', 'nav.home')); // en aliases it copy if missing
 		expect(t('it', 'does.not.exist')).toBe('does.not.exist');
 	});
+	it('interpolates {name} placeholders', () => {
+		expect(t('it', 'tag.year', { n: 2 })).toBe('2° anno');
+		expect(t('en', 'tag.year', { n: 2 })).toBe('Year 2');
+	});
+	it('leaves an unmatched placeholder untouched', () => {
+		expect(t('it', 'tag.year', { other: 1 })).toBe('{n}° anno');
+	});
 	it('aliases en content root to it for now', () => {
 		expect(LANGUAGES.en.contentRoot).toBe('it');
 	});

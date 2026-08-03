@@ -1,6 +1,7 @@
 // app/src/lib/content/tree.ts
 import { parseEntryName, stripMdExt } from './slug';
-import type { RawFile, FolderNode, NoteNode, ContentNode, NoteType, Author } from './types';
+import { folderLevel } from './types';
+import type { RawFile, FolderNode, NoteNode, ContentNode, NoteType, Author, Tag } from './types';
 
 const BIG = Number.MAX_SAFE_INTEGER;
 
@@ -26,11 +27,35 @@ export function parseAuthors(raw: unknown): Author[] | undefined {
 	return out.length ? out : undefined;
 }
 
-function emptyFolder(slug: string, path: string, order: number): FolderNode {
+/**
+ * Normalize the display tags of a node from its frontmatter (undefined if none).
+ *
+ * `year: 2` becomes a localized year pill; `tags: [a, b]` (or a comma-separated
+ * string) become free-form pills, in the order written. `topics`/`keywords` are
+ * deliberately NOT read here — those stay SEO-only keywords.
+ */
+export function parseTags(fm: Record<string, unknown>): Tag[] | undefined {
+	const out: Tag[] = [];
+
+	const year = typeof fm.year === 'string' ? Number(fm.year.trim()) : fm.year;
+	if (typeof year === 'number' && Number.isFinite(year)) out.push({ kind: 'year', year });
+
+	const raw = fm.tags;
+	const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(',') : [];
+	for (const item of list) {
+		const label = String(item ?? '').trim();
+		if (label) out.push({ kind: 'plain', label });
+	}
+
+	return out.length ? out : undefined;
+}
+
+function emptyFolder(slug: string, path: string, order: number, depth: number): FolderNode {
 	return {
 		kind: 'folder',
 		slug,
 		path,
+		level: folderLevel(depth),
 		order,
 		title: slug,
 		description: '',
@@ -41,7 +66,7 @@ function emptyFolder(slug: string, path: string, order: number): FolderNode {
 }
 
 export function buildTree(files: RawFile[]): FolderNode {
-	const root = emptyFolder('', '', 0);
+	const root = emptyFolder('', '', 0, 0);
 
 	// 1) ensure folder chain exists for each file, then place notes / index.md
 	for (const file of files) {
@@ -57,7 +82,7 @@ export function buildTree(files: RawFile[]): FolderNode {
 				(c): c is FolderNode => c.kind === 'folder' && c.slug === slug
 			);
 			if (!next) {
-				next = emptyFolder(slug, urlSegs.join('/'), order ?? BIG);
+				next = emptyFolder(slug, urlSegs.join('/'), order ?? BIG, urlSegs.length);
 				next.published = false; // becomes true only when index.md seen
 				cursor.children.push(next);
 			}
@@ -70,6 +95,7 @@ export function buildTree(files: RawFile[]): FolderNode {
 			cursor.description = file.frontmatter.description ?? '';
 			cursor.image = file.frontmatter.image;
 			cursor.authors = parseAuthors(file.frontmatter.authors);
+			cursor.tags = parseTags(file.frontmatter);
 			cursor.order = file.frontmatter.order ?? cursor.order;
 			cursor.published = file.frontmatter.published ?? true; // navigable now
 			cursor.content = file.content;
@@ -87,6 +113,7 @@ export function buildTree(files: RawFile[]): FolderNode {
 				type: (file.frontmatter.type as NoteType) ?? 'lecture',
 				published: file.frontmatter.published ?? true,
 				authors: parseAuthors(file.frontmatter.authors),
+				tags: parseTags(file.frontmatter),
 				content: file.content,
 				frontmatter: file.frontmatter
 			};
@@ -124,7 +151,7 @@ export function groupChildren(folder: FolderNode) {
 	// `all` keeps the folder's natural order — modules (folders) and notes
 	// interleaved by prefix/order — so the page renders ONE continuous list with
 	// folders tinted + a folder icon and notes a per-type icon, nothing split.
-	// `modules` (folders only) still feeds the homepage course grid.
+	// `modules` (folders only) still feeds the homepage CDL grid.
 	return {
 		modules: folder.children.filter((c): c is FolderNode => c.kind === 'folder'),
 		notes: folder.children.filter((c): c is NoteNode => c.kind === 'note'),

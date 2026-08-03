@@ -3,10 +3,11 @@
 A public website of my university computer-science notes, live at
 **[learn.specy.app](https://learn.specy.app)**.
 
-It turns an Obsidian vault of lecture notes into a fast, themeable course/lecture
-site for students: pick a subject, read the notes, with full math, diagrams,
-callouts and code rendering. The content is currently in Italian; the site is
-built i18n-ready (an English content root can be added later).
+It turns an Obsidian vault of lecture notes into a fast, themeable degree/course
+site for students: pick a degree programme, pick a course, read the notes, with
+full math, diagrams, callouts and code rendering. The content is currently in
+Italian; the site is built i18n-ready (an English content root can be added
+later).
 
 ## Repository layout
 
@@ -19,7 +20,7 @@ here as the `notes/` **git submodule** and read at build time.
 ├─ src/  static/  scripts/      # the SvelteKit app (at repo root)
 ├─ vite.config.js  vite-plugin-vault.js  svelte.config.js
 ├─ notes/                       # git submodule → Specy/notes (the vault)
-│  └─ it/                       #   Italian content root, one folder per course
+│  └─ it/                       #   Italian content root, one folder per CDL
 ├─ docs/                        # design spec + implementation plans
 └─ package.json
 ```
@@ -31,21 +32,32 @@ here as the `notes/` **git submodule** and read at build time.
 
 Content is discovered by **convention**, not hardcoded. The rules:
 
+- **Hierarchy:** the content root nests
+  **CDL** (_corso di laurea_ — the degree programme) → **course** → optional
+  **modules** → notes. A folder's role is derived from its depth
+  (`folderLevel()` in `src/lib/content/types.ts`), so the homepage lists CDLs, a
+  CDL page lists its courses, and a course page lists its lectures.
 - **Naming:** every folder and note file is `NN-slug` (zero-padded), so folders
   and files interleave by number when sorted. The `NN-` prefix is stripped from
-  URLs (`notes/it/01-analisi/03-limiti.md` → `/it/analisi/limiti`).
-- **Folder descriptor:** a folder is a navigable course/module **only if it
+  URLs (`notes/it/01-informatica/01-analisi/03-limiti.md` →
+  `/it/informatica/analisi/limiti`).
+- **Folder descriptor:** a folder is a navigable CDL/course/module **only if it
   contains an `index.md`** (exempt from the `NN-` rule). Folders without one
   (`attachments/`, `Excalidraw/`) are treated as asset stores and ignored in the
   nav tree.
 - **Modules:** a course may nest sub-folders (modules), each with its own
   `index.md` — e.g. `base-di-dati/teoria` and `base-di-dati/laboratorio`.
+  Nesting is arbitrary; anything below the course level is a module.
+- **Tags:** `year: 2` renders a localized pill (`2° anno` / `Year 2`) and free
+  `tags: [...]` render as extra pills, shown on cards, list rows and page
+  headers. Prev/next navigation is scoped to the **course**, so it never rolls
+  over from the last lecture of one course into the next.
 - **Language = content root:** today only `it/` exists; `en` is aliased to it in
   app config. Flip one value when translations exist.
 
 ### Frontmatter
 
-**Folder `index.md`** (course or module):
+**Folder `index.md`** (CDL, course or module):
 
 ```yaml
 ---
@@ -53,6 +65,8 @@ title: Reti di Calcolatori
 description: Internet, protocolli, TCP/UDP, routing, link layer, wireless e sicurezza.
 image: attachments/cover.webp # optional cover
 order: 6 # optional; defaults to the NN- prefix
+year: 3 # optional; renders a localized "3° anno" / "Year 3" pill
+tags: [Obbligatorio, 12 CFU] # optional; extra free-form pills
 published: true # optional; default true (set false to hide)
 ---
 Longer overview in markdown…
@@ -65,11 +79,13 @@ Longer overview in markdown…
 title: Livello di trasporto: UDP, RDT e TCP
 description: Multiplexing, UDP, trasferimento dati affidabile, TCP, congestione.
 type: lecture   # lecture (default) | resource | exercise | exam | summary
+tags: [esame]   # optional; pills, same as folders
 ---
 ```
 
-On a course page, child **modules** render as cards, `type: lecture` notes form
-the **Lectures** index, and every other type goes under **Resources**.
+A folder page lists every child in one ordered list — sub-folders tinted with a
+folder icon, notes with a per-`type` icon — and shows each child's tags. `year`
+and `tags` are display-only; `topics`/`keywords` stay SEO keywords.
 
 ## Markdown rendering
 

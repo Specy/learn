@@ -99,6 +99,35 @@ describe('context', () => {
 		const crumbs = breadcrumbsFor(root, 'fisica', 'it', 'Home');
 		expect(crumbs).toEqual([{ title: 'Home', url: '/it' }]);
 	});
+	it('siblings: prev/next stop at the course, not the CDL', () => {
+		// cdl "info" holds two courses; walking off the end of one must NOT roll
+		// over into the next course's first lecture.
+		const cdlFiles: RawFile[] = [
+			{ relPath: '01-info/index.md', frontmatter: { title: 'Informatica' }, content: '' },
+			{ relPath: '01-info/01-reti/index.md', frontmatter: { title: 'Reti' }, content: '' },
+			{ relPath: '01-info/01-reti/01-a.md', frontmatter: { title: 'A' }, content: '' },
+			{ relPath: '01-info/01-reti/02-b.md', frontmatter: { title: 'B' }, content: '' },
+			{ relPath: '01-info/02-ai/index.md', frontmatter: { title: 'AI' }, content: '' },
+			{ relPath: '01-info/02-ai/01-c.md', frontmatter: { title: 'C' }, content: '' }
+		];
+		const { root } = buildContext(cdlFiles, {});
+		expect(siblings(root, 'info/reti/b').next).toBeNull();
+		expect(siblings(root, 'info/reti/b').prev?.slug).toBe('a');
+		expect(siblings(root, 'info/ai/c').prev).toBeNull();
+	});
+	it('siblings: a module lecture still scopes to its whole course', () => {
+		const modFiles: RawFile[] = [
+			{ relPath: '01-info/index.md', frontmatter: { title: 'Informatica' }, content: '' },
+			{ relPath: '01-info/01-reti/index.md', frontmatter: { title: 'Reti' }, content: '' },
+			{ relPath: '01-info/01-reti/01-a.md', frontmatter: { title: 'A' }, content: '' },
+			{ relPath: '01-info/01-reti/02-mod/index.md', frontmatter: { title: 'Mod' }, content: '' },
+			{ relPath: '01-info/01-reti/02-mod/01-b.md', frontmatter: { title: 'B' }, content: '' }
+		];
+		const { root } = buildContext(modFiles, {});
+		// crosses the module boundary (a → mod/b) but stays inside "reti"
+		expect(siblings(root, 'info/reti/mod/b').prev?.slug).toBe('a');
+		expect(siblings(root, 'info/reti/mod/b').next).toBeNull();
+	});
 	it('siblings: middle note has both prev and next non-null', () => {
 		const filesWithThree: RawFile[] = [
 			{

@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import GithubSlugger from 'github-slugger';
 import {
 	stripPrefix,
+	courseOf,
 	inlineText,
 	mdToText,
 	splitSections,
@@ -17,6 +18,17 @@ describe('stripPrefix', () => {
 	it('leaves un-prefixed names untouched', () => {
 		expect(stripPrefix('analisi')).toBe('analisi');
 		expect(stripPrefix('index')).toBe('index');
+	});
+});
+
+describe('courseOf', () => {
+	it('takes the cdl/course prefix of a note path', () => {
+		expect(courseOf(['info', 'reti', 'tcp'])).toBe('info/reti');
+		expect(courseOf(['info', 'reti', 'modulo', 'tcp'])).toBe('info/reti');
+	});
+	it('never swallows the note itself, and is empty at the vault root', () => {
+		expect(courseOf(['info', 'nota'])).toBe('info'); // note directly under a cdl
+		expect(courseOf(['nota'])).toBe('');
 	});
 });
 
@@ -161,6 +173,31 @@ describe('buildSearchIndex', () => {
 		expect(serie.notePath).toBe('analisi/serie');
 		expect(serie.course).toBe('analisi');
 		expect(serie.courseTitle).toBe('Analisi Matematica');
+	});
+
+	it('scopes a cdl-nested note to its course, not its cdl', () => {
+		const entries = buildSearchIndex([
+			{ relPath: '01-info/index.md', frontmatter: { title: 'Informatica' }, content: '' },
+			{ relPath: '01-info/06-reti/index.md', frontmatter: { title: 'Reti' }, content: '' },
+			{
+				relPath: '01-info/06-reti/03-tcp.md',
+				frontmatter: { title: 'TCP' },
+				content: '## Handshake\ntre vie'
+			},
+			{
+				relPath: '01-info/06-reti/01-parte/01-ip.md',
+				frontmatter: { title: 'IP' },
+				content: 'indirizzi'
+			}
+		]);
+		const tcp = entries.find((e) => e.kind === 'file' && e.noteTitle === 'TCP');
+		expect(tcp.notePath).toBe('info/reti/tcp');
+		expect(tcp.course).toBe('info/reti');
+		expect(tcp.courseTitle).toBe('Reti');
+		// a lecture nested one module deeper still belongs to the same course
+		const ip = entries.find((e) => e.kind === 'file' && e.noteTitle === 'IP');
+		expect(ip.course).toBe('info/reti');
+		expect(ip.courseTitle).toBe('Reti');
 	});
 
 	it('file entry text includes title, description and intro for filename matching', () => {

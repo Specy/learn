@@ -7,7 +7,7 @@ export type SearchEntryKind = 'file' | 'section';
 export interface SearchEntry {
 	id: number;
 	kind: SearchEntryKind;
-	course: string; // top-level url slug, '' for root-level pages
+	course: string; // course url prefix, e.g. 'informatica/reti'; '' for root-level pages
 	courseTitle: string; // display name of the course (folder index title)
 	notePath: string; // language-agnostic url path, e.g. 'analisi/serie'
 	noteTitle: string;
@@ -32,7 +32,8 @@ export interface SearchSnippet {
 /** Where the user currently is, used to rerank and to build language-scoped urls. */
 export interface SearchContext {
 	lang: string;
-	course: string; // '' when on the language home / no course
+	cdl: string; // current degree programme slug; '' on the language home
+	course: string; // current course/CDL url prefix; '' on the language home
 	notePath: string; // '' when not inside a note
 }
 

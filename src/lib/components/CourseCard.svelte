@@ -1,15 +1,22 @@
 <script lang="ts">
+	import Tags from './Tags.svelte';
+	import type { Tag } from '$lib/content/types';
+
 	let {
 		title,
 		description,
 		image,
 		imageAlt,
+		tags,
+		lang = 'it',
 		url
 	}: {
 		title: string;
 		description: string;
 		image?: string;
 		imageAlt?: string;
+		tags?: Tag[];
+		lang?: string;
 		url: string;
 	} = $props();
 </script>
@@ -18,6 +25,7 @@
 	{#if image}<img src={image} alt={imageAlt ?? title} />{/if}
 	<h2 class:no-img={!image}>{title}</h2>
 	<p>{description}</p>
+	<div class="card-tags"><Tags {tags} {lang} /></div>
 </a>
 
 <style>
@@ -51,5 +59,11 @@
 	}
 	p {
 		color: var(--hint);
+	}
+	.card-tags {
+		margin-top: 0.6rem;
+	}
+	.card-tags:empty {
+		margin-top: 0;
 	}
 </style>
