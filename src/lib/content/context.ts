@@ -1,5 +1,6 @@
 // app/src/lib/content/context.ts
 import { buildTree, getNodeByPath, listRoutes, groupChildren } from './tree';
+import { COURSE_DEPTH } from './types';
 import type { RawFile, FolderNode, NoteNode, Author } from './types';
 import type { LinkResolver } from './markdown';
 
@@ -99,15 +100,31 @@ export function extractToc(html: string) {
 	return out;
 }
 
+/**
+ * Nearest enclosing COURSE folder for a path — the scope prev/next walks.
+ *
+ * Courses live at `cdl/course`, so we descend at most COURSE_DEPTH segments,
+ * never past the node's own parent. A note that sits directly under a CDL (or a
+ * vault with no CDL level at all) therefore scopes to whatever folder does
+ * enclose it, rather than falling back to the whole vault.
+ */
+function courseScope(root: FolderNode, segs: string[]): FolderNode {
+	let scope = root;
+	for (let i = 0; i < Math.min(COURSE_DEPTH, segs.length - 1); i++) {
+		const next = scope.children.find(
+			(c): c is FolderNode => c.kind === 'folder' && c.slug === segs[i]
+		);
+		if (!next) break;
+		scope = next;
+	}
+	return scope;
+}
+
 export function siblings(root: FolderNode, notePath: string) {
-	const segs = notePath.split('/');
+	const segs = notePath.split('/').filter(Boolean);
 	if (segs.length === 0) return { prev: null, next: null };
 
-	const courseFolder = root.children.find(
-		(c): c is FolderNode => c.kind === 'folder' && c.slug === segs[0]
-	);
-
-	const targetRoot = courseFolder || root;
+	const targetRoot = courseScope(root, segs);
 
 	const list: NoteNode[] = [];
 	const walk = (node: FolderNode | NoteNode) => {

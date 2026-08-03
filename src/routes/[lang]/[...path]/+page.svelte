@@ -9,8 +9,16 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import Authors from '$lib/components/Authors.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import Tags from '$lib/components/Tags.svelte';
 
 	let { data }: PageProps = $props();
+
+	// A CDL lists degree courses; anything deeper lists lectures/modules.
+	const contentsLabel = $derived(
+		data.kind === 'folder' && data.node.level === 'cdl'
+			? t(data.lang, 'cdl.courses')
+			: t(data.lang, 'course.contents')
+	);
 
 	// Icon per content type, shown to the left of each item in the unified list.
 	function iconFor(type: string | undefined) {
@@ -63,6 +71,7 @@
 			{#if data.node.description}<p class="hero-desc">
 					{data.node.description}
 				</p>{/if}
+			<Tags tags={data.node.tags} lang={data.lang} />
 		</header>
 
 		{#if data.html}
@@ -72,9 +81,11 @@
 		{/if}
 
 		{#if data.groups.contents.length}
-			<h2 class="section">{t(data.lang, 'course.contents')}</h2>
+			<h2 class="section">{contentsLabel}</h2>
 			<ol class="list">
 				{#each data.groups.contents as n}
+					{@const yearTags = (n.tags ?? []).filter((tag) => tag.kind === 'year')}
+					{@const otherTags = (n.tags ?? []).filter((tag) => tag.kind !== 'year')}
 					<li>
 						<a
 							class="list-link"
@@ -85,15 +96,19 @@
 							{#if n.image}
 								<img class="list-img" src={n.image} alt="" loading="lazy" />
 							{/if}
-							<span class="list-body">
-								<span class="list-head">
+							<div class="list-body">
+								<div class="list-head">
 									<span class="lt">{n.title}</span>
+									<!-- The year rides the title row (it scans as a column down the
+									     list); any other tag sits under the description. -->
+									<Tags tags={yearTags} lang={data.lang} size="sm" />
 									<span class="list-icon">
 										<Icon name={n.kind === 'folder' ? 'folder' : iconFor(n.type)} size={18} />
 									</span>
-								</span>
+								</div>
 								{#if n.description}<span class="ld">{n.description}</span>{/if}
-							</span>
+								<Tags tags={otherTags} lang={data.lang} size="sm" />
+							</div>
 						</a>
 					</li>
 				{/each}
@@ -127,6 +142,7 @@
 						{data.node.description}
 					</p>{/if}
 			</div>
+			<Tags tags={data.node.tags} lang={data.lang} />
 		</header>
 
 		<div class="md-content">
@@ -235,16 +251,19 @@
 		flex: 1;
 		min-width: 0;
 	}
+	/* Title, then the year pill, then the type icon pinned right (margin-left:auto
+	   on the icon, so the pill stays adjacent to the title rather than drifting). */
 	.list-head {
 		display: flex;
-		justify-content: space-between;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.5rem 0.6rem;
 		min-width: 0;
 	}
 	/* Type icon, beside the title. */
 	.list-icon {
 		flex: none;
+		margin-left: auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;

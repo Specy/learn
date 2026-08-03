@@ -7,5 +7,6 @@ export const entries: EntryGenerator = () => Object.keys(LANGUAGES).map((lang) =
 export const load: PageServerLoad = async ({ params }) => {
 	if (!(params.lang in LANGUAGES)) error(404, 'Unknown language');
 	const data = await renderNode(params.lang, '');
-	return { lang: params.lang, courses: data.kind === 'folder' ? data.groups.modules : [] };
+	// Root children are CDLs (corsi di laurea); their own children are the courses.
+	return { lang: params.lang, cdls: data.kind === 'folder' ? data.groups.modules : [] };
 };

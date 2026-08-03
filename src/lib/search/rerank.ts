@@ -26,9 +26,28 @@ const SNIPPET_LEN = 140;
 const bucket = (x: number) => Math.round(x * 1000);
 const kindRank = (k: 'file' | 'section') => (k === 'file' ? 0 : 1);
 
+/** The degree programme an entry belongs to — the first segment of its path. */
+export function cdlOf(e: SearchEntry): string {
+	return e.notePath.split('/')[0] ?? '';
+}
+
+/**
+ * Once inside a degree programme, search is confined to it: browsing Informatica
+ * should never surface a Biologia lecture. On the language home (`cdl: ''`)
+ * nothing is filtered, so that page searches the whole vault.
+ */
+export function inSearchScope(e: SearchEntry, ctx: SearchContext): boolean {
+	return !ctx.cdl || cdlOf(e) === ctx.cdl;
+}
+
+/**
+ * `course` is a url prefix (`informatica/reti`), so a CDL page — whose context
+ * is just `informatica` — treats every course beneath it as same-course too.
+ */
 export function scopeOf(e: SearchEntry, ctx: SearchContext): ResultScope {
 	if (ctx.notePath && e.notePath === ctx.notePath) return 'current';
-	if (ctx.course && e.course === ctx.course) return 'same-course';
+	if (ctx.course && (e.course === ctx.course || e.course.startsWith(ctx.course + '/')))
+		return 'same-course';
 	return 'other';
 }
 
@@ -86,18 +105,21 @@ export function makeSnippet(e: SearchEntry, matches?: RankInput['matches']): Sea
 }
 
 /**
- * Rerank Fuse hits by current-location context, dedupe, and project to results.
+ * Restrict Fuse hits to the active degree programme, rerank the rest by
+ * current-location context, dedupe, and project to results.
  *
  * Boost: current note (×0.3) ≪ same course (×0.6) ≪ elsewhere (×1). On the
- * language home (no course, no note) nothing is boosted. The current note is
- * never capped (it may surface several matches); every other note contributes
- * at most two section results so one note can't flood the list.
+ * language home (no cdl, no course, no note) nothing is filtered or boosted. The
+ * current note is never capped (it may surface several matches); every other
+ * note contributes at most two section results so one note can't flood the list.
  */
 export function rerank(hits: RankInput[], context: SearchContext, limit = 10): SearchResult[] {
-	const ranked = hits.map((h) => {
-		const scope = scopeOf(h.item, context);
-		return { h, scope, adj: h.score * SCOPE_MULT[scope] };
-	});
+	const ranked = hits
+		.filter((h) => inSearchScope(h.item, context))
+		.map((h) => {
+			const scope = scopeOf(h.item, context);
+			return { h, scope, adj: h.score * SCOPE_MULT[scope] };
+		});
 
 	ranked.sort(
 		(a, b) =>

@@ -14,13 +14,13 @@
 	const segments = $derived(pathname.split('/').filter(Boolean));
 	const activePath = $derived(segments.slice(1).join('/'));
 
-	// Sort course children putting the active course first
+	// Root children are CDLs — float the one being browsed to the top.
 	const sortedChildren = $derived(
 		(() => {
 			const children = [...rootNode.children];
-			const courseSlug = activePath.split('/')[0];
-			if (courseSlug) {
-				const idx = children.findIndex((c) => c.slug === courseSlug);
+			const cdlSlug = activePath.split('/')[0];
+			if (cdlSlug) {
+				const idx = children.findIndex((c) => c.slug === cdlSlug);
 				if (idx > 0) {
 					const [activeItem] = children.splice(idx, 1);
 					children.unshift(activeItem);

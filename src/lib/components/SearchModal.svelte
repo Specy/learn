@@ -44,14 +44,26 @@
 	});
 	const errored = $derived(searchClient.status === 'error');
 
+	// The url is /[lang]/<cdl>/<course>/…, so the current course is the first two
+	// segments after the language — on a CDL page that narrows to just the CDL,
+	// which scopeOf() still treats as enclosing every course under it. `cdl` is
+	// what confines results; it is '' on the language home, which searches all.
 	function currentContext(): SearchContext {
 		const segs = page.url.pathname.split('/').filter(Boolean);
+		const notePath = segs.slice(1);
 		return {
 			lang: segs[0] || lang || 'it',
-			course: segs[1] ?? '',
-			notePath: segs.slice(1).join('/')
+			cdl: notePath[0] ?? '',
+			course: notePath.slice(0, 2).join('/'),
+			notePath: notePath.join('/')
 		};
 	}
+
+	// Inside a degree programme the index is filtered to it — say so, rather than
+	// promising "all courses".
+	const placeholder = $derived(
+		currentContext().cdl ? t(lang, 'search.placeholderCdl') : t(lang, 'search.placeholder')
+	);
 
 	async function runSearch() {
 		const q = query.trim();
@@ -184,7 +196,7 @@
 					onkeydown={onKeydown}
 					type="text"
 					class="search-input"
-					placeholder={t(lang, 'search.placeholder')}
+					{placeholder}
 					autocomplete="off"
 					autocapitalize="off"
 					autocorrect="off"

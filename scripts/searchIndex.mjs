@@ -14,6 +14,22 @@ import GithubSlugger from 'github-slugger';
 
 const PREFIX = /^(\d+)-(.+)$/;
 
+/**
+ * Depth at which folders are COURSES: the vault nests cdl/course/…, so a
+ * course is the two-segment prefix of a note path. Mirrors COURSE_DEPTH in
+ * src/lib/content/types.ts.
+ */
+const COURSE_DEPTH = 2;
+
+/**
+ * The course a note belongs to, as a url path prefix (e.g. `informatica/reti`).
+ * Never returns the note itself: a note sitting directly under a CDL scopes to
+ * that CDL, and a root-level note has no course at all.
+ */
+export function courseOf(segs) {
+	return segs.slice(0, Math.min(COURSE_DEPTH, segs.length - 1)).join('/');
+}
+
 /** `NN-slug` -> `slug` (mirror of parseEntryName). */
 export function stripPrefix(name) {
 	const m = PREFIX.exec(name);
@@ -114,13 +130,15 @@ export function splitSections(md) {
  * the `/{lang}/` prefix is added at search time from the active context.
  */
 export function buildSearchIndex(files) {
-	// course slug -> display title, from "<course>/index.md"
-	const courseTitle = {};
+	// folder url path -> display title, from every "<…>/index.md". Keyed by the
+	// full prefix-stripped path so both `informatica` (a CDL) and
+	// `informatica/reti` (a course) resolve.
+	const folderTitle = {};
 	for (const f of files) {
 		const parts = f.relPath.split('/');
-		if (parts.length === 2 && /^index\.md$/i.test(parts[1])) {
-			const slug = stripPrefix(parts[0]);
-			courseTitle[slug] = (f.frontmatter && f.frontmatter.title) || slug;
+		if (parts.length >= 2 && /^index\.md$/i.test(parts[parts.length - 1])) {
+			const segs = parts.slice(0, -1).map(stripPrefix);
+			folderTitle[segs.join('/')] = (f.frontmatter && f.frontmatter.title) || segs[segs.length - 1];
 		}
 	}
 
@@ -135,8 +153,8 @@ export function buildSearchIndex(files) {
 		const segs = parts.map(stripPrefix);
 		segs[segs.length - 1] = stripPrefix(fileName.replace(/\.md$/i, ''));
 		const notePath = segs.join('/');
-		const course = segs.length > 1 ? segs[0] : '';
-		const cTitle = course ? courseTitle[course] || course : '';
+		const course = courseOf(segs);
+		const cTitle = course ? folderTitle[course] || course.split('/').pop() : '';
 
 		const fm = f.frontmatter || {};
 		const noteTitle = fm.title || segs[segs.length - 1];

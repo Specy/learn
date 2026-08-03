@@ -13,10 +13,10 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import { t } from '$lib/i18n';
 	import { searchClient } from '$lib/search/searchClient.svelte';
+	import { searchUi } from '$lib/search/searchUi.svelte';
 
 	let { children } = $props();
 	let sidebarOpen = $state(false);
-	let searchOpen = $state(false);
 
 	// Keyboard-shortcut hint (Cmd on Apple, Ctrl elsewhere); resolved on mount.
 	let isMac = $state(false);
@@ -29,13 +29,13 @@
 	$effect(() => {
 		const _path = page.url.pathname;
 		sidebarOpen = false;
-		searchOpen = false;
+		searchUi.open = false;
 	});
 
 	function onWindowKeydown(e: KeyboardEvent) {
 		if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
 			e.preventDefault();
-			searchOpen = !searchOpen;
+			searchUi.open = !searchUi.open;
 		}
 	}
 
@@ -61,7 +61,7 @@
 
 	<button
 		class="search-toggle"
-		onclick={() => (searchOpen = true)}
+		onclick={() => (searchUi.open = true)}
 		aria-label={t(lang, 'search.button')}
 	>
 		<Icon name="search" size={20} />
@@ -69,7 +69,7 @@
 	</button>
 
 	<Sidebar bind:open={sidebarOpen} {lang} />
-	<SearchModal bind:open={searchOpen} {lang} />
+	<SearchModal bind:open={searchUi.open} {lang} />
 
 	<Nav />
 	<PageTransition>

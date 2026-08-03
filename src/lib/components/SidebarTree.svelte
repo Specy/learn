@@ -16,7 +16,9 @@
 	} = $props();
 
 	let isFolder = $derived(node.kind === 'folder');
-	let isRootCourse = $derived(isFolder && !node.path.includes('/'));
+	// Top-level entries are CDLs (corsi di laurea) — they get the card treatment.
+	let isRootCdl = $derived(node.kind === 'folder' && node.level === 'cdl');
+	let isCourse = $derived(node.kind === 'folder' && node.level === 'course');
 	let isActive = $derived(activePath === node.path || activePath.startsWith(node.path + '/'));
 	let isOpen = $state(false);
 
@@ -33,7 +35,12 @@
 </script>
 
 {#if isFolder}
-	<div class="folder-item" class:is-root-course={isRootCourse} class:active={isActive}>
+	<div
+		class="folder-item"
+		class:is-root-cdl={isRootCdl}
+		class:is-course={isCourse}
+		class:active={isActive}
+	>
 		<div
 			class="folder-header"
 			class:active={isActive}
@@ -50,7 +57,7 @@
 			</span>
 		</div>
 		{#if isOpen}
-			<ul class="folder-children" class:root-children={isRootCourse}>
+			<ul class="folder-children" class:root-children={isRootCdl}>
 				<li>
 					<a
 						href="/{lang}/{node.path}"
@@ -94,8 +101,8 @@
 		margin: 0.4rem 0;
 	}
 
-	/* Card styling for top level courses */
-	.folder-item.is-root-course {
+	/* Card styling for top level CDLs */
+	.folder-item.is-root-cdl {
 		border-radius: 0.6rem;
 		background: color-mix(in srgb, var(--secondary) 30%, transparent);
 		margin-bottom: 0.75rem;
@@ -165,8 +172,14 @@
 		color: var(--accent);
 	}
 
-	.is-root-course > .folder-header .folder-title {
+	.is-root-cdl > .folder-header .folder-title {
 		font-size: 1.05rem;
+		font-weight: 700;
+	}
+
+	/* Courses sit one level in — keep them clearly heavier than their modules. */
+	.is-course > .folder-header .folder-title {
+		font-size: 1rem;
 		font-weight: 700;
 	}
 
