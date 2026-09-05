@@ -42,26 +42,28 @@ function rehypeDemoteHeadings() {
 
 export function createProcessor(resolve: LinkResolver) {
 	// `resolve` = { note(target):string, asset(target):string } link resolvers
-	return unified()
-		.use(remarkParse)
-		.use(remarkGfm)
-		.use(remarkMath)
-		.use(remarkObsidianLinks, resolve) // [[x]] / ![[x]] BEFORE remark-rehype
-		.use(remarkCallouts) // > [!type] BEFORE remark-rehype
-		.use(remarkRehype, { allowDangerousHtml: true })
-		.use(rehypeRaw)
-		.use(rehypeKatex)
-		// before rehypeSlug so ids land on the final heading elements
-		.use(rehypeDemoteHeadings)
-		.use(rehypeSlug)
-		.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
-		.use(rehypeMermaid)
-		.use(rehypeShiki, {
-			themes: { light: 'one-light', dark: 'one-dark-pro' },
-			fallbackLanguage: 'text',
-			defaultColor: false
-		})
-		.use(rehypeStringify, { allowDangerousHtml: true });
+	return (
+		unified()
+			.use(remarkParse)
+			.use(remarkGfm)
+			.use(remarkMath)
+			.use(remarkObsidianLinks, resolve) // [[x]] / ![[x]] BEFORE remark-rehype
+			.use(remarkCallouts) // > [!type] BEFORE remark-rehype
+			.use(remarkRehype, { allowDangerousHtml: true })
+			.use(rehypeRaw)
+			.use(rehypeKatex)
+			// before rehypeSlug so ids land on the final heading elements
+			.use(rehypeDemoteHeadings)
+			.use(rehypeSlug)
+			.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
+			.use(rehypeMermaid)
+			.use(rehypeShiki, {
+				themes: { light: 'one-light', dark: 'one-dark-pro' },
+				fallbackLanguage: 'text',
+				defaultColor: false
+			})
+			.use(rehypeStringify, { allowDangerousHtml: true })
+	);
 }
 
 /**
