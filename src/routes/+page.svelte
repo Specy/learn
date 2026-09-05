@@ -12,14 +12,16 @@
 			lang: 'it' as const,
 			href: '/it',
 			label: 'Italiano',
-			blurb: 'Appunti universitari di informatica: analisi, fisica, basi di dati, reti, IA e altro.',
+			blurb:
+				'Appunti universitari di informatica: analisi, fisica, basi di dati, reti, IA e altro.',
 			cta: 'Sfoglia i corsi'
 		},
 		{
 			lang: 'en' as const,
 			href: '/en',
 			label: 'English',
-			blurb: 'Computer science university notes: analysis, physics, databases, networks, AI and more.',
+			blurb:
+				'Computer science university notes: analysis, physics, databases, networks, AI and more.',
 			cta: 'Browse the courses'
 		}
 	];
@@ -34,9 +36,9 @@
 	<header class="hero">
 		<h1 class="main-header">Appunti universitari</h1>
 		<p class="lede">
-			Una raccolta aperta di appunti di informatica presi durante il corso di laurea, dagli
-			esami di analisi e fisica fino a basi di dati, reti e intelligenza artificiale. Tutto
-			consultabile liberamente, senza registrazione.
+			Una raccolta aperta di appunti di informatica presi durante il corso di laurea, dagli esami di
+			analisi e fisica fino a basi di dati, reti e intelligenza artificiale. Tutto consultabile
+			liberamente, senza registrazione.
 		</p>
 	</header>
 

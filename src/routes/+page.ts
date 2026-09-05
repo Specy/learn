@@ -9,10 +9,7 @@ export const load: PageLoad = async () => {
 	// instead of a bare language picker.
 	const routes = await listAllRoutes();
 	const perLang = Object.fromEntries(
-		Object.keys(LANGUAGES).map((lang) => [
-			lang,
-			routes.filter((r) => r.lang === lang).length
-		])
+		Object.keys(LANGUAGES).map((lang) => [lang, routes.filter((r) => r.lang === lang).length])
 	) as Record<string, number>;
 	return { perLang };
 };
