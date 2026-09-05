@@ -92,7 +92,7 @@ export function buildContext(files: RawFile[], assets: Record<string, unknown>):
 
 export function extractToc(html: string) {
 	const out: { id: string; text: string; depth: number }[] = [];
-	const re = /<h([2-4])[^>]*\bid="([^"]+)"[^>]*>(.*?)<\/h\1>/gis;
+	const re = /<h([2-5])[^>]*\bid="([^"]+)"[^>]*>(.*?)<\/h\1>/gis;
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(html)) !== null) {
 		out.push({ depth: Number(m[1]), id: m[2], text: m[3].replace(/<[^>]+>/g, '').trim() });
