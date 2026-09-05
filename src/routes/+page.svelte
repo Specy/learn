@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import SEO from '$lib/components/SEO.svelte';
+	import { siteLd } from '$lib/jsonld';
 	import { LANGUAGES } from '$lib/languages';
 
 	let { data }: PageProps = $props();
@@ -30,6 +31,7 @@
 <SEO
 	title="Appunti universitari di informatica"
 	description="Appunti universitari di informatica in italiano: analisi, fisica, basi di dati, reti, intelligenza artificiale e altro. Liberi da consultare, scritti e mantenuti da Specy."
+	jsonLd={siteLd()}
 />
 
 <section class="article">
