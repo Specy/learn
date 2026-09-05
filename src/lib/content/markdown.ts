@@ -1,5 +1,6 @@
 // app/src/lib/content/markdown.ts
 import { unified } from 'unified';
+import type { Nodes, Root } from 'hast';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -28,13 +29,13 @@ export type LinkResolver = {
  * contents at all.
  */
 function rehypeDemoteHeadings() {
-	return (tree: import('hast').Root) => {
-		const walk = (node: any) => {
+	return (tree: Root) => {
+		const walk = (node: Nodes) => {
 			if (node.type === 'element') {
 				const level = /^h([1-5])$/.exec(node.tagName);
 				if (level) node.tagName = `h${Number(level[1]) + 1}`;
 			}
-			node.children?.forEach(walk);
+			if ('children' in node) node.children.forEach(walk);
 		};
 		walk(tree);
 	};
