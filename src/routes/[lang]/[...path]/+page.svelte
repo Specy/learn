@@ -7,6 +7,7 @@
 	import { t } from '$lib/i18n';
 	import RenderedMarkdown from '$lib/components/RenderedMarkdown.svelte';
 	import SEO from '$lib/components/SEO.svelte';
+	import { contentPageLd } from '$lib/jsonld';
 	import Authors from '$lib/components/Authors.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Tags from '$lib/components/Tags.svelte';
@@ -45,6 +46,8 @@
 			return [];
 		})()
 	);
+
+	const entityUrl = $derived(`/${data.lang}/${data.node.path}`);
 </script>
 
 <SEO
@@ -56,18 +59,39 @@
 	type={data.kind === 'folder' ? 'website' : 'article'}
 	lang={data.lang}
 	{keywords}
+	jsonLd={contentPageLd({
+		kind: data.kind,
+		node: data.node,
+		lang: data.lang,
+		pathname: entityUrl,
+		breadcrumbs: data.breadcrumbs,
+		authorNames: data.authors?.map((a) => a.name)
+	})}
 />
 
 {#if data.kind === 'folder'}
-	<article class="article">
+	<article class="article" data-vt-current={entityUrl} data-vt-kind="folder">
 		<div class="crumbs-row">
 			<div class="crumbs-left">
 				<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
 			</div>
 			<Authors authors={data.authors} />
 		</div>
-		<header class="hero">
-			<h1 class="main-header">{data.node.title}</h1>
+		<header
+			class="hero entity-hero"
+			data-vt-entity={entityUrl}
+			data-vt-role="hero"
+			data-vt-surface=""
+		>
+			<div
+				class="hero-heading"
+				style="display: flex; justify-content: space-between; align-items: center;"
+			>
+				<h1 class="main-header" data-vt-title>{data.node.title}</h1>
+				<span class="hero-icon" data-vt-icon aria-hidden="true">
+					<Icon name="folder" size={22} />
+				</span>
+			</div>
 			{#if data.node.description}<p class="hero-desc">
 					{data.node.description}
 				</p>{/if}
@@ -92,17 +116,20 @@
 							class:module={n.kind === 'folder'}
 							class:has-img={!!n.image}
 							href={n.url}
+							data-vt-entity={n.url}
+							data-vt-role="item"
+							data-vt-surface=""
 						>
 							{#if n.image}
 								<img class="list-img" src={n.image} alt="" loading="lazy" />
 							{/if}
 							<div class="list-body">
 								<div class="list-head">
-									<span class="lt">{n.title}</span>
+									<span class="lt" data-vt-title>{n.title}</span>
 									<!-- The year rides the title row (it scans as a column down the
 									     list); any other tag sits under the description. -->
 									<Tags tags={yearTags} lang={data.lang} size="sm" />
-									<span class="list-icon">
+									<span class="list-icon" data-vt-icon aria-hidden="true">
 										<Icon name={n.kind === 'folder' ? 'folder' : iconFor(n.type)} size={18} />
 									</span>
 								</div>
@@ -118,12 +145,19 @@
 		<NoteNav prev={data.prev} next={data.next} lang={data.lang} />
 	</article>
 {:else}
-	<article class="article article-lecture">
+	<article
+		class="article article-lecture"
+		data-vt-current={entityUrl}
+		data-vt-kind="note"
+		data-vt-prev={data.prev?.path}
+		data-vt-next={data.next?.path}
+	>
 		<div class="crumbs-row">
 			<Breadcrumbs breadcrumbs={data.breadcrumbs} current={data.node.title} />
 			{#if data.lecturePos && data.lecturePos.total > 1}
 				<span
 					class="lecture-pos"
+					data-vt-progress
 					aria-label={`${t(data.lang, 'note.lecture')} ${data.lecturePos.index}/${
 						data.lecturePos.total
 					}`}
@@ -135,8 +169,18 @@
 				<Authors authors={data.authors} />
 			</div>
 		</div>
-		<header class="hero">
-			<h1 class="main-header">{data.node.title}</h1>
+		<header
+			class="hero entity-hero"
+			data-vt-entity={entityUrl}
+			data-vt-role="hero"
+			data-vt-surface=""
+		>
+			<div class="hero-heading">
+				<span class="hero-icon" data-vt-icon aria-hidden="true">
+					<Icon name={iconFor(data.node.type)} size={22} />
+				</span>
+				<h1 class="main-header" data-vt-title>{data.node.title}</h1>
+			</div>
 			<div class="hero-row">
 				{#if data.node.description}<p class="hero-desc">
 						{data.node.description}
@@ -169,6 +213,34 @@
 		display: flex;
 		justify-content: space-between;
 		flex-wrap: wrap;
+	}
+	.entity-hero {
+		position: relative;
+		padding: 1.1rem 1.2rem;
+		border: 1px solid color-mix(in srgb, var(--accent2) 72%, transparent);
+		border-radius: 1rem;
+		background: color-mix(in srgb, var(--secondary) 38%, transparent);
+		box-shadow: 0 8px 28px color-mix(in srgb, var(--shadow-color) 75%, transparent);
+	}
+	.hero-heading {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		min-width: 0;
+	}
+	.hero-icon {
+		flex: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		border-radius: 0.75rem;
+		background: color-mix(in srgb, var(--accent) 15%, transparent);
+		color: var(--accent);
+	}
+	.entity-hero .hero-desc {
+		padding: 0;
 	}
 	/* Breadcrumbs + the lecture-position pill, grouped on the left; the pill sits
 	   just right of the breadcrumbs and wraps below them when space is tight.
@@ -287,6 +359,18 @@
 	@media screen and (max-width: 768px) {
 		.article-lecture {
 			padding: 0 !important;
+		}
+		.entity-hero {
+			border-radius: 0.8rem;
+			padding: 1rem;
+		}
+		.hero-heading {
+			align-items: flex-start;
+			gap: 0.7rem;
+		}
+		.hero-icon {
+			width: 2.4rem;
+			height: 2.4rem;
 		}
 	}
 </style>
