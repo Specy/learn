@@ -2,12 +2,24 @@
 	import type { PageProps } from './$types';
 	import CourseCard from '$lib/components/CourseCard.svelte';
 	import SEO from '$lib/components/SEO.svelte';
+	import { languageIndexLd } from '$lib/jsonld';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { t } from '$lib/i18n';
 	let { data }: PageProps = $props();
 </script>
 
-<SEO lang={data.lang} />
+<SEO
+	lang={data.lang}
+	jsonLd={languageIndexLd({
+		lang: data.lang,
+		pathname: `/${data.lang}`,
+		cdls: (data.cdls ?? []).map((c) => ({
+			title: c.title,
+			description: c.description,
+			url: c.url
+		}))
+	})}
+/>
 
 <section class="article">
 	<header
