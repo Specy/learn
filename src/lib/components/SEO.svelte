@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n';
 	import { LANGUAGES } from '$lib/languages';
+	import { jsonLdScriptTag } from '$lib/jsonld';
 
 	let {
 		title,
@@ -9,7 +10,8 @@
 		image,
 		type = 'website',
 		lang = 'it',
-		keywords = []
+		keywords = [],
+		jsonLd
 	}: {
 		title?: string;
 		description?: string;
@@ -17,6 +19,8 @@
 		type?: 'website' | 'article';
 		lang?: string;
 		keywords?: string[];
+		/** Schema.org graph for this page, serialized into a ld+json block */
+		jsonLd?: unknown;
 	} = $props();
 
 	const baseUrl = 'https://learn.specy.app';
@@ -93,4 +97,8 @@
 	<meta name="twitter:title" content={displayTitle} />
 	<meta name="twitter:description" content={displayDescription} />
 	<meta name="twitter:image" content={displayImage()} />
+	{#if jsonLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html jsonLdScriptTag(jsonLd)}
+	{/if}
 </svelte:head>
