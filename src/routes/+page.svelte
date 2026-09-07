@@ -3,6 +3,8 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { siteLd } from '$lib/jsonld';
 	import { LANGUAGES } from '$lib/languages';
+	import FaArrowRight from '~icons/fa-solid/arrow-right'
+
 
 	let { data }: PageProps = $props();
 
@@ -53,7 +55,10 @@
 				<span class="lang-count">
 					{data.perLang[entry.lang] ?? 0} pagine · {LANGUAGES[entry.lang].label}
 				</span>
-				<span class="lang-cta">{entry.cta} →</span>
+				<span class="lang-cta">
+					{entry.cta}
+					<FaArrowRight />
+				</span>
 			</a>
 		{/each}
 	</div>
@@ -89,10 +94,12 @@
 		border: 1px solid var(--border, rgb(128 128 128 / 25%));
 		text-decoration: none;
 		color: inherit;
+		transition: all 0.2s;
 	}
 	.lang-card:hover,
 	.lang-card:focus-visible {
-		border-color: var(--accent, currentColor);
+		background: color-mix(in srgb, var(--secondary) 95%, transparent);
+		box-shadow: 0 6px 20px var(--shadow-color);
 	}
 	.lang-label {
 		font-size: 1.25rem;
@@ -107,7 +114,11 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.lang-cta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.25rem;
 		font-weight: 600;
-		margin-top: 0.25rem;
+		margin-top: auto;
 	}
 </style>
