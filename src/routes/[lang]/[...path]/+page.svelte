@@ -207,7 +207,7 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.5rem 0.8rem;
-		padding: 0 1rem;
+		margin-bottom: 0.5rem;
 	}
 	.hero-row {
 		display: flex;
@@ -284,6 +284,7 @@
 		gap: 0.8rem;
 		padding: 0.6rem 0.6rem 0.6rem 1.2rem;
 		border-radius: 0.5rem;
+		border: 1px solid var(--border, rgb(128 128 128 / 25%));
 		background: color-mix(in srgb, var(--secondary) 50%, transparent);
 		box-shadow: 0 1px 3px var(--shadow-color);
 		transition:
@@ -298,7 +299,7 @@
 	/* Modules stand out with a subtle accent tint and a folder icon, so the one
 	   continuous list still reads "folder vs. page" at a glance. */
 	.module {
-		--mod-tint: color-mix(in srgb, var(--secondary) 80%, var(--accent));
+		--mod-tint: color-mix(in srgb, var(--secondary) 85%, var(--accent));
 		background: color-mix(in srgb, var(--mod-tint), transparent);
 	}
 	.module:hover {
