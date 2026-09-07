@@ -45,10 +45,9 @@
 </nav>
 
 <style>
-
-    nav {
-        display: flex;
-    }
+	nav {
+		display: flex;
+	}
 	.breadcrumbs {
 		/* No padding: align the pill to the row's left edge (so the authors sit
 		   directly below it) and let the row gap own the vertical spacing.

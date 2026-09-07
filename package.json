@@ -8,6 +8,7 @@
 		"prebuild": "node scripts/buildExcalidraw.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
+		"fix": "eslint --fix . && prettier --write .",
 		"test": "vitest run",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:all": "npm run check && prettier --check . && eslint src",
