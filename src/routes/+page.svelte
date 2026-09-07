@@ -3,8 +3,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 	import { siteLd } from '$lib/jsonld';
 	import { LANGUAGES } from '$lib/languages';
-	import FaArrowRight from '~icons/fa-solid/arrow-right'
-
+	import FaArrowRight from '~icons/fa-solid/arrow-right';
 
 	let { data }: PageProps = $props();
 
