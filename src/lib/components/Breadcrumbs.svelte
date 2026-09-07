@@ -45,6 +45,10 @@
 </nav>
 
 <style>
+
+    nav {
+        display: flex;
+    }
 	.breadcrumbs {
 		/* No padding: align the pill to the row's left edge (so the authors sit
 		   directly below it) and let the row gap own the vertical spacing.
@@ -65,6 +69,7 @@
 		max-width: 100%;
 		border-radius: 999px;
 		overflow: hidden;
+		border: 1px solid var(--border, rgb(128 128 128 / 25%));
 		font-size: 1rem; /* reset: parent .article sets 1.2rem */
 	}
 
