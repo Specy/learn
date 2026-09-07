@@ -6,12 +6,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { vaultPlugin } from './vite-plugin-vault.js';
 import { searchIndexPlugin } from './vite-plugin-search-index.js';
+import Icons from 'unplugin-icons/vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT_DIR = path.resolve(__dirname, 'notes', 'it');
 
 export default defineConfig({
-	plugins: [vaultPlugin(), searchIndexPlugin(), sveltekit()],
+	plugins: [vaultPlugin(), searchIndexPlugin(), Icons({ compiler: 'svelte' }), sveltekit()],
 	server: { fs: { allow: [__dirname, VAULT_DIR] } },
 	test: {
 		include: [

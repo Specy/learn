@@ -31,6 +31,7 @@
 <style>
 	.card {
 		display: block;
+		border: 1px solid var(--border, rgb(128 128 128 / 25%));
 		padding: 1.2rem;
 		border-radius: 1rem;
 		background: color-mix(in srgb, var(--secondary) 50%, transparent);
