@@ -1,5 +1,5 @@
 import { listAllRoutes } from '$lib/content';
-import { LANGUAGES } from '$lib/languages';
+import { INDEXABLE_LANGS } from '$lib/languages';
 
 export const prerender = true;
 
@@ -18,24 +18,22 @@ function escapeXml(value: string) {
 
 export const GET = async () => {
 	const routes = await listAllRoutes();
-	const langs = Object.keys(LANGUAGES);
 
-	// Every content path exists under each language, and SEO.svelte cross-declares them
-	// with hreflang. Mirroring those alternates here is what lets Google serve the right
-	// language variant rather than picking one and treating the rest as duplicates.
+	// Only languages with their own content are listed. Aliased languages (e.g. en, which serves
+	// the Italian notes) are noindex and canonicalize to /it, so they stay out of the sitemap.
+	// Each indexable URL is cross-declared with hreflang for every indexable language, which lets
+	// Google serve the right language variant rather than treating the copies as duplicates.
+	const alternatesFor = (path: string) =>
+		INDEXABLE_LANGS.map((l) => ({ lang: l, href: `${SITE_URL}/${l}${path}` }));
 	const paths = [
 		{ loc: '/', alternates: [] as { lang: string; href: string }[] },
-		...langs.map((lang) => ({
-			loc: `/${lang}`,
-			alternates: langs.map((l) => ({ lang: l, href: `${SITE_URL}/${l}` }))
-		})),
-		...routes.map((route) => ({
-			loc: `/${route.lang}/${route.path}`,
-			alternates: langs.map((l) => ({
-				lang: l,
-				href: `${SITE_URL}/${l}/${route.path}`
+		...INDEXABLE_LANGS.map((lang) => ({ loc: `/${lang}`, alternates: alternatesFor('') })),
+		...routes
+			.filter((route) => INDEXABLE_LANGS.includes(route.lang))
+			.map((route) => ({
+				loc: `/${route.lang}/${route.path}`,
+				alternates: alternatesFor(`/${route.path}`)
 			}))
-		}))
 	];
 
 	const buildDate = new Date().toISOString().slice(0, 10);

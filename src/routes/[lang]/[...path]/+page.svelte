@@ -11,6 +11,8 @@
 	import Authors from '$lib/components/Authors.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Tags from '$lib/components/Tags.svelte';
+	import { contentLang } from '$lib/languages';
+	import { canonicalPath, noteSeoTitle } from '$lib/seo';
 
 	let { data }: PageProps = $props();
 
@@ -48,10 +50,15 @@
 	);
 
 	const entityUrl = $derived(`/${data.lang}/${data.node.path}`);
+	// JSON-LD and the canonical describe the content language, which differs from the URL for en.
+	const pageLang = $derived(contentLang(data.lang));
+	const pagePath = $derived(`/${pageLang}/${data.node.path}`);
+	// Generic titles ("Lezione 7", "Teoria") repeat across courses; name the course they sit in.
+	const seoTitle = $derived(noteSeoTitle(data.node.title, data.courseTitle));
 </script>
 
 <SEO
-	title={data.node.title}
+	title={seoTitle}
 	description={data.node.description}
 	image={data.kind === 'folder'
 		? data.node.image
@@ -62,9 +69,9 @@
 	jsonLd={contentPageLd({
 		kind: data.kind,
 		node: data.node,
-		lang: data.lang,
-		pathname: entityUrl,
-		breadcrumbs: data.breadcrumbs,
+		lang: pageLang,
+		pathname: pagePath,
+		breadcrumbs: data.breadcrumbs.map((b) => ({ ...b, url: canonicalPath(b.url) })),
 		authorNames: data.authors?.map((a) => a.name)
 	})}
 />
