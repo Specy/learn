@@ -14,6 +14,8 @@ import { groupChildren } from './tree';
 import type { Author, FolderNode, ContentNode } from './types';
 import { renderMarkdown } from './markdown';
 import { LANGUAGES } from '$lib/languages';
+import { COURSE_DEPTH } from './types';
+import { descriptionFromMarkdown } from '$lib/seo';
 import { t } from '$lib/i18n';
 import type { Context } from './context';
 
@@ -54,6 +56,7 @@ export async function renderNode(lang: string, path: string) {
 			lang,
 			node: folderNode,
 			html,
+			courseTitle: courseTitleFor(c.root, node.path),
 			groups: prefixGroups(g, lang, resolve),
 			breadcrumbs,
 			authors,
@@ -67,6 +70,8 @@ export async function renderNode(lang: string, path: string) {
 	const noteNode = {
 		...node,
 		content: '',
+		// Notes without a frontmatter description get one from their opening paragraph.
+		description: node.description || descriptionFromMarkdown(node.content),
 		frontmatter: {
 			...node.frontmatter,
 			image: node.frontmatter.image ? resolve.asset(node.frontmatter.image) : undefined
@@ -80,10 +85,22 @@ export async function renderNode(lang: string, path: string) {
 		html,
 		toc: extractToc(html),
 		lecturePos,
+		courseTitle: courseTitleFor(c.root, node.path),
 		prev: sib.prev && { title: sib.prev.title, path: `/${lang}/${sib.prev.path}` },
 		next: sib.next && { title: sib.next.title, path: `/${lang}/${sib.next.path}` },
 		breadcrumbs
 	};
+}
+
+/**
+ * Title of the course a page sits in (the folder at COURSE_DEPTH), or undefined when the
+ * page sits at or above course level. Used to tell apart generic titles across courses.
+ */
+function courseTitleFor(root: FolderNode, path: string): string | undefined {
+	const segs = path.split('/').filter(Boolean);
+	if (segs.length <= COURSE_DEPTH) return undefined;
+	const course = getNodeByPath(root, segs.slice(0, COURSE_DEPTH));
+	return course?.kind === 'folder' && course.level === 'course' ? course.title : undefined;
 }
 
 /** Resolve author avatars: pass through absolute URLs/paths, else vault asset. */

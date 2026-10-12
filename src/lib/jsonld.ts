@@ -170,7 +170,7 @@ export function siteLd() {
 				url: SITE_URL,
 				name: 'Appunti universitari',
 				publisher: { '@id': PUBLISHER['@id'] },
-				inLanguage: ['it', 'en']
+				inLanguage: 'it'
 			},
 			AUTHOR
 		]

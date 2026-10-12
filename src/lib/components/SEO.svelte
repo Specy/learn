@@ -1,15 +1,17 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n';
-	import { LANGUAGES } from '$lib/languages';
+	import { DEFAULT_LANG, INDEXABLE_LANGS, LANGUAGES, contentLang, isLang } from '$lib/languages';
 	import { jsonLdScriptTag } from '$lib/jsonld';
+	import { splitLangPath } from '$lib/seo';
 
 	let {
 		title,
 		description,
 		image,
 		type = 'website',
-		lang = 'it',
+		lang = DEFAULT_LANG,
 		keywords = [],
 		jsonLd
 	}: {
@@ -17,6 +19,7 @@
 		description?: string;
 		image?: string;
 		type?: 'website' | 'article';
+		/** URL language of the page. Aliased languages render their content language's SEO. */
 		lang?: string;
 		keywords?: string[];
 		/** Schema.org graph for this page, serialized into a ld+json block */
@@ -25,21 +28,32 @@
 
 	const baseUrl = 'https://learn.specy.app';
 
+	// The language the page's text is actually written in (`en` serves Italian content for now).
+	const pageLang = $derived(contentLang(lang));
+
 	// Format Title: default to localized brand, or append brand suffix
 	const siteName = 'Specy';
 	const displayTitle = $derived(
 		title
 			? `${title} | ${siteName}`
-			: lang === 'en'
+			: pageLang === 'en'
 				? 'University Notes | Specy'
 				: 'Appunti universitari | Specy'
 	);
 
 	// Format Description: default to i18n home subtitle or empty
-	const displayDescription = $derived(description || t(lang, 'home.subtitle') || '');
+	const displayDescription = $derived(description || t(pageLang, 'home.subtitle') || '');
 
-	// Format canonical URL using the current route path
-	const canonicalUrl = $derived(`${baseUrl}${page.url.pathname}`);
+	// Path split from its language segment, used for canonical and hreflang targets
+	const route = $derived(splitLangPath(page.url.pathname));
+	const hasLangPrefix = $derived(isLang(route.segment));
+
+	// An aliased language duplicates another language's pages, so it canonicalizes to that
+	// language's URL and asks engines not to index itself. Everything else is self-canonical.
+	const aliased = $derived(isLang(lang) && !!LANGUAGES[lang].aliasOf);
+	const canonicalUrl = $derived(
+		aliased ? `${baseUrl}/${pageLang}${route.rest}` : `${baseUrl}${page.url.pathname}`
+	);
 
 	// Format Image: handle relative path resolution
 	const displayImage = $derived(() => {
@@ -54,15 +68,10 @@
 		keywords && keywords.length > 0 ? keywords.join(', ') : undefined
 	);
 
-	// Get current path suffix without lang prefix for hreflang tags
-	const pathWithoutLang = $derived(page.url.pathname.replace(/^\/(it|en)\b/, ''));
-
-	// Client side lang sync
-	import { onMount } from 'svelte';
+	// Client-side navigation swaps the page without reloading, so keep <html lang> in step.
+	// The server-rendered value comes from hooks.server.ts.
 	onMount(() => {
-		if (lang) {
-			document.documentElement.setAttribute('lang', lang);
-		}
+		document.documentElement.setAttribute('lang', pageLang);
 	});
 </script>
 
@@ -74,11 +83,15 @@
 		<meta name="keywords" content={displayKeywords} />
 	{/if}
 
-	<!-- Language Alternates (hreflang) -->
-	{#each Object.keys(LANGUAGES) as l}
-		<link rel="alternate" hreflang={l} href="{baseUrl}/{l}{pathWithoutLang}" />
-	{/each}
-	<link rel="alternate" hreflang="x-default" href="{baseUrl}/it{pathWithoutLang}" />
+	{#if aliased}
+		<meta name="robots" content="noindex, follow" />
+	{:else if hasLangPrefix}
+		<!-- Language Alternates (hreflang): indexable languages only -->
+		{#each INDEXABLE_LANGS as l (l)}
+			<link rel="alternate" hreflang={l} href="{baseUrl}/{l}{route.rest}" />
+		{/each}
+		<link rel="alternate" hreflang="x-default" href="{baseUrl}/{DEFAULT_LANG}{route.rest}" />
+	{/if}
 
 	<!-- Canonical URL -->
 	<link rel="canonical" href={canonicalUrl} />
