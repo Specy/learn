@@ -5,14 +5,16 @@
 	import { languageIndexLd } from '$lib/jsonld';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { t } from '$lib/i18n';
+	import { contentLang } from '$lib/languages';
 	let { data }: PageProps = $props();
+	const pageLang = $derived(contentLang(data.lang));
 </script>
 
 <SEO
 	lang={data.lang}
 	jsonLd={languageIndexLd({
-		lang: data.lang,
-		pathname: `/${data.lang}`,
+		lang: pageLang,
+		pathname: `/${pageLang}`,
 		cdls: (data.cdls ?? []).map((c) => ({
 			title: c.title,
 			description: c.description,
