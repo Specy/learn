@@ -13,7 +13,7 @@ const AUTHOR = {
 const PUBLISHER = {
 	'@type': 'EducationalOrganization',
 	'@id': `${SITE_URL}/#vault`,
-	name: 'Specy — Appunti universitari',
+	name: 'Specy - Appunti universitari',
 	url: SITE_URL
 } as const;
 
