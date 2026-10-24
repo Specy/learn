@@ -2,9 +2,15 @@ import type { FolderLevel, NoteType } from './content/types';
 
 const SITE_URL = 'https://learn.specy.app';
 
+/**
+ * The same Person specy.app defines. The shared `@id` makes it one entity across all the
+ * sites, so the author of these notes and the author of the other apps resolve together.
+ */
 const AUTHOR = {
 	'@type': 'Person',
-	name: 'Specy',
+	'@id': 'https://specy.app/#person',
+	name: 'Enrico Menichelli',
+	alternateName: 'Specy',
 	url: 'https://specy.app',
 	sameAs: ['https://github.com/Specy']
 } as const;
@@ -97,8 +103,12 @@ export function contentPageLd(opts: {
 	const url = absolute(pathname);
 	const isCourse = opts.kind === 'folder' && node.level === 'course';
 
+	// Frontmatter names authors by plain name, so the site's own author is swapped for the
+	// shared Person instead of becoming a second, unlinked "Specy".
 	const authors = opts.authorNames?.length
-		? opts.authorNames.map((name) => ({ '@type': 'Person', name }))
+		? opts.authorNames.map((name) =>
+				name === AUTHOR.alternateName || name === AUTHOR.name ? AUTHOR : { '@type': 'Person', name }
+			)
 		: [AUTHOR];
 
 	const main: Record<string, unknown> = {
