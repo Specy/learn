@@ -570,6 +570,12 @@ html[data-theme='dark'] .excalidraw-dark {
 
 /* Inner grid lines: each cell draws its bottom + right border; the table's own
    border covers the outer edges, so drop the last column/row inner edges. */
+/* Tables keep nowrap (set on .md table) for headers and short data, but body
+   cells may wrap so prose-heavy tables fit instead of scrolling sideways. */
+.md td {
+	white-space: normal;
+}
+
 .md th,
 .md td {
 	padding: 0.5rem 0.8rem;
