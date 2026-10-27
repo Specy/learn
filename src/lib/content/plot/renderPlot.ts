@@ -71,6 +71,52 @@ function range(a: number, b: number, step: number): number[] {
 	return out;
 }
 
+/**
+ * Smooth curve through points (monotone cubic / PCHIP): it never overshoots,
+ * so every given point that is higher or lower than both neighbours becomes a
+ * local max/min with a horizontal tangent — the textbook "generic f" look.
+ * NaN outside the first..last x.
+ */
+export function smooth(points: [number, number][]): Fn {
+	const xs = points.map((p) => p[0]),
+		ys = points.map((p) => p[1]);
+	const n = xs.length;
+	if (n < 2) throw new Error('through needs at least two points');
+	for (let i = 1; i < n; i++)
+		if (!(xs[i] > xs[i - 1])) throw new Error('through points must have increasing x');
+	const h = xs.slice(1).map((x, i) => x - xs[i]);
+	const d = h.map((hi, i) => (ys[i + 1] - ys[i]) / hi);
+	const end = (h0: number, h1: number, d0: number, d1: number) => {
+		const m = ((2 * h0 + h1) * d0 - h0 * d1) / (h0 + h1);
+		if (Math.sign(m) !== Math.sign(d0)) return 0;
+		if (Math.sign(d0) !== Math.sign(d1) && Math.abs(m) > 3 * Math.abs(d0)) return 3 * d0;
+		return m;
+	};
+	const m = xs.map((_, i) => {
+		if (n === 2) return d[0];
+		if (i === 0) return end(h[0], h[1], d[0], d[1]);
+		if (i === n - 1) return end(h[n - 2], h[n - 3], d[n - 2], d[n - 3]);
+		if (d[i - 1] * d[i] <= 0) return 0;
+		const w1 = 2 * h[i] + h[i - 1],
+			w2 = h[i] + 2 * h[i - 1];
+		return (w1 + w2) / (w1 / d[i - 1] + w2 / d[i]);
+	});
+	return (x) => {
+		if (!(x >= xs[0] && x <= xs[n - 1])) return NaN;
+		let i = 0;
+		while (i < n - 2 && x > xs[i + 1]) i++;
+		const t = (x - xs[i]) / h[i],
+			t2 = t * t,
+			t3 = t2 * t;
+		return (
+			(2 * t3 - 3 * t2 + 1) * ys[i] +
+			(t3 - 2 * t2 + t) * h[i] * m[i] +
+			(-2 * t3 + 3 * t2) * ys[i + 1] +
+			(t3 - t2) * h[i] * m[i + 1]
+		);
+	};
+}
+
 export function renderPlot(source: string, id: string): string {
 	const spec = matter(`---\n${source}\n---\n`).data as Record<string, unknown>;
 	const items = (spec.items ?? []) as Item[];
@@ -85,7 +131,16 @@ export function renderPlot(source: string, id: string): string {
 		if (kind !== 'fn') continue;
 		const src = String(item.fn);
 		const def = parseDefinition(src);
-		if (def) {
+		if ('through' in item) {
+			// `fn: f` + `through: [[x, y], …]` — points may use `let` names, which
+			// are bound below, so build the curve on first use.
+			const name = src.replace(/\(\s*x\s*\)\s*$/, '').trim();
+			if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name))
+				throw new Error(`with "through", fn must be a name like f, got "${src}"`);
+			let curve: Fn | null = null;
+			scope.fns[name] = (x) => (curve ??= smooth((item.through as unknown[]).map(pt)))(x);
+			curves.set(item, scope.fns[name]);
+		} else if (def) {
 			scope.fns[def.name] = bind(compile(def.body), def.params, scope);
 			curves.set(item, scope.fns[def.name]);
 		} else curves.set(item, inX(src));
@@ -183,16 +238,23 @@ export function renderPlot(source: string, id: string): string {
 		].join('');
 		back.push(`<path class="plot-grid" d="${g}"/>`);
 	}
-	if (spec.axes !== false) {
+	if (spec.axes !== undefined && ![true, false, 'x', 'y'].includes(spec.axes as string))
+		throw new Error('axes must be true, false, x or y');
+	const showX = spec.axes === undefined || spec.axes === true || spec.axes === 'x';
+	const showY = spec.axes === undefined || spec.axes === true || spec.axes === 'y';
+	if (showX || showY) {
 		const ax = X(axisX),
 			ay = Y(axisY);
-		fore.push(`<path class="plot-axis" d="M0 ${f2(ay)}H${W - 1}M${f2(ax)} ${H}V1"/>`);
-		fore.push(
-			arrowHead(W, ay, 0, ay, 'var(--palette-fg)'),
-			arrowHead(ax, 0, ax, H, 'var(--palette-fg)')
-		);
-		label(spec.xlabel, W, ay, 'se');
-		label(spec.ylabel, ax, 0, 'ne');
+		if (showX) {
+			fore.push(`<path class="plot-axis" d="M0 ${f2(ay)}H${W - 1}"/>`);
+			fore.push(arrowHead(W, ay, 0, ay, 'var(--palette-fg)'));
+			label(spec.xlabel, W, ay, 'se');
+		}
+		if (showY) {
+			fore.push(`<path class="plot-axis" d="M${f2(ax)} ${H}V1"/>`);
+			fore.push(arrowHead(ax, 0, ax, H, 'var(--palette-fg)'));
+			label(spec.ylabel, ax, 0, 'ne');
+		}
 
 		const ticks = (v: unknown, lo: number, hi: number): [number, string][] => {
 			if (v && typeof v === 'object' && !Array.isArray(v))
@@ -202,12 +264,12 @@ export function renderPlot(source: string, id: string): string {
 				: range(lo, hi, tickStep(v ?? spec.ticks, hi - lo));
 			return list.map((t) => [t, `$${+t.toPrecision(6)}$`]);
 		};
-		for (const [t, l] of ticks(spec.xticks, x0, x1)) {
+		for (const [t, l] of showX ? ticks(spec.xticks, x0, x1) : []) {
 			if (t === axisX && !spec.xticks) continue; // the origin is labelled by neither axis
 			fore.push(`<path class="plot-axis" d="M${f2(X(t))} ${f2(ay - 3)}v6"/>`);
 			label(l, X(t), ay + 2, 's');
 		}
-		for (const [t, l] of ticks(spec.yticks, y0, y1)) {
+		for (const [t, l] of showY ? ticks(spec.yticks, y0, y1) : []) {
 			if (t === axisY && !spec.yticks) continue;
 			fore.push(`<path class="plot-axis" d="M${f2(ax - 3)} ${f2(Y(t))}h6"/>`);
 			label(l, ax - 3, Y(t), 'w');
@@ -323,7 +385,12 @@ export function renderPlot(source: string, id: string): string {
 				label(it.label, X(x), Y(y), String(it.anchor ?? 'ne'), it.color);
 		} else if ('guide' in it) {
 			const [x, y] = pt(it.guide);
-			const d = `M${f2(X(x))} ${f2(Y(axisY))}V${f2(Y(y))}H${f2(X(axisX))}`;
+			// to: x → only down to the x-axis, y → only across to the y-axis
+			const to = String(it.to ?? 'both');
+			const down = `M${f2(X(x))} ${f2(Y(axisY))}V${f2(Y(y))}`;
+			const across = `M${f2(X(x))} ${f2(Y(y))}H${f2(X(axisX))}`;
+			if (!['both', 'x', 'y'].includes(to)) throw new Error('guide "to" must be both, x or y');
+			const d = (to !== 'y' ? down : '') + (to !== 'x' ? across : '');
 			back.push(`<path d="${d}" fill="none" ${stroke({ dash: 'dotted', ...it }, 'muted', 1.2)}/>`);
 		} else if ('text' in it) {
 			const [x, y] = pt(it.at);

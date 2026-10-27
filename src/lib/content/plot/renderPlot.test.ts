@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderPlot } from './renderPlot';
+import { renderPlot, smooth } from './renderPlot';
 import { renderMarkdown } from '../markdown';
 
 const resolve = {
@@ -73,5 +73,37 @@ describe('plot fences in markdown', () => {
 		const html = await renderMarkdown('$\\textcolor{blue}{x} + \\textcolor{#123456}{y}$', resolve);
 		expect(html).toContain('color:var(--palette-blue)');
 		expect(html).toContain('color:#123456');
+	});
+});
+
+describe('plot options', () => {
+	it('smooth() passes through its points with flat tangents at extrema', () => {
+		const f = smooth([
+			[0, 1],
+			[1, 2],
+			[2, 0.5],
+			[3, 2.5]
+		]);
+		expect(f(1)).toBeCloseTo(2);
+		expect(f(2)).toBeCloseTo(0.5);
+		expect((f(1 + 1e-4) - f(1 - 1e-4)) / 2e-4).toBeCloseTo(0, 3);
+		expect(f(1.5)).toBeLessThan(2); // no overshoot past the max
+		expect(f(4)).toBeNaN();
+	});
+	it('fn + through defines a named curve other items can use', () => {
+		const html = renderPlot(
+			'x: [0, 3]\ny: [0, 3]\nitems:\n  - fn: f\n    through: [[0, 1], [1.5, 2], [3, 1]]\n  - point: [1.5, f(1.5)]',
+			'p'
+		);
+		expect(html).toContain('cy="100"'); // y = 2 → 300 - 2/3*300
+	});
+	it('axes: x draws only the x-axis, guide to: x only the drop line', () => {
+		const html = renderPlot(
+			'x: [0, 2]\ny: [0, 2]\naxes: x\nitems:\n  - guide: [1, 1]\n    to: x',
+			'p'
+		);
+		expect(html.match(/class="plot-axis" d="M0 /g)).toHaveLength(1);
+		expect(html).not.toContain('V1"');
+		expect(html).toMatch(/d="M240 300V150"/);
 	});
 });
