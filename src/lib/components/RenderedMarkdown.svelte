@@ -7,6 +7,35 @@
 
 	let { html }: { html: string } = $props();
 
+	/**
+	 * Open/close a foldable callout by animating its height (as specy.app does for
+	 * sidetracks). While closing, the content stays visible and `data-closing`
+	 * turns the chevron; `folded` is only applied once the animation ends.
+	 */
+	function toggleFold(c: HTMLElement) {
+		const opening = c.classList.contains('folded') || c.hasAttribute('data-closing');
+		c.getAnimations().forEach((a) => a.cancel());
+		c.removeAttribute('data-closing');
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			c.classList.toggle('folded', !opening);
+			return;
+		}
+		const start = c.getBoundingClientRect().height;
+		c.classList.add('folded');
+		const closed = c.getBoundingClientRect().height;
+		c.classList.remove('folded');
+		const open = c.getBoundingClientRect().height;
+		if (!opening) c.setAttribute('data-closing', '');
+		const animation = c.animate(
+			{ height: [`${start}px`, `${opening ? open : closed}px`] },
+			{ duration: 200, easing: 'ease' }
+		);
+		animation.onfinish = () => {
+			if (!opening) c.classList.add('folded');
+			c.removeAttribute('data-closing');
+		};
+	}
+
 	let el: HTMLElement;
 
 	$effect(() => {
@@ -35,7 +64,7 @@
 			// Start closed if fold value is 'closed'
 			if (c.dataset.calloutFold === 'closed') c.classList.add('folded');
 			const title = c.querySelector('.callout-title');
-			title?.addEventListener('click', () => c.classList.toggle('folded'));
+			title?.addEventListener('click', () => toggleFold(c));
 		});
 
 		return () => {

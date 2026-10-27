@@ -280,8 +280,8 @@ html[data-theme='dark'] .excalidraw-dark {
 	border-left: 0.3rem solid var(--accent);
 	padding: 0.7rem 1rem;
 	border-radius: 0.3rem 0.8rem 0.8rem 0.3rem;
-	background: color-mix(in srgb, var(--tertiary) 10%, transparent);
-	/* same translucent surface as code blocks */
+	/* the slate surface with a hint of the accent, as on specy.app */
+	background: color-mix(in srgb, #52537a1a, var(--accent) 5%);
 	margin: 1rem 0;
 }
 
@@ -412,9 +412,31 @@ html[data-theme='dark'] .excalidraw-dark {
 	color: var(--accent);
 }
 
-/* Foldable callout affordance */
+/* Foldable callout affordance: a chevron that turns as the callout opens
+   (specy.app sidetracks). The height animation is in RenderedMarkdown. */
+.callout[data-callout-fold] {
+	overflow: hidden;
+}
+
 .callout[data-callout-fold] .callout-title {
 	cursor: pointer;
+	user-select: none;
+}
+
+.callout[data-callout-fold] .callout-title::after {
+	content: '';
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-left: auto;
+	border-right: 0.15rem solid currentColor;
+	border-bottom: 0.15rem solid currentColor;
+	transform: rotate(45deg) translate(-0.1rem, -0.1rem);
+	transition: transform 0.2s ease;
+}
+
+.callout.folded .callout-title::after,
+.callout[data-closing] .callout-title::after {
+	transform: rotate(-45deg);
 }
 
 /* Folded state — hide everything except the title */
@@ -443,7 +465,7 @@ html[data-theme='dark'] .excalidraw-dark {
 
 .md p:not(.mermaid *),
 .md li:not(.mermaid *) {
-	font-size: 1.1rem;
+	font-size: 1.2rem;
 	letter-spacing: 0.01em;
 	line-height: 1.5;
 	margin: 1.3rem 0;
@@ -473,14 +495,21 @@ html[data-theme='dark'] .excalidraw-dark {
 	text-decoration: none;
 }
 
-.md h1 {
+/* Notes' `#` sections are demoted to h2 (the page title is the only h1), as in
+   specy.app's posts, so the scale starts at h2. */
+.md h2 {
 	margin-top: 4rem;
 	font-size: 2.2rem;
 }
 
-.md h2 {
-	margin-top: 1rem;
+.md h3 {
+	margin-top: 2rem;
 	font-size: 1.8rem;
+}
+
+.md h4 {
+	margin-top: 1.5rem;
+	font-size: 1.4rem;
 }
 
 /* Display (block) math centered horizontally. */
@@ -494,11 +523,10 @@ html[data-theme='dark'] .excalidraw-dark {
 	overflow-y: hidden;
 }
 
-.md h3 {
-	font-size: 1.4rem;
-}
-
-.md img {
+/* Only images standing in a paragraph or list item (the embeds) get the figure
+   treatment, so it doesn't reach images inside other components — e.g. it used
+   to override the Excalidraw light/dark toggle and show both copies. */
+.md :is(p, li) > img {
 	width: 100%;
 	max-width: 40rem;
 	display: block;
@@ -539,7 +567,7 @@ html[data-theme='dark'] .excalidraw-dark {
 	border-radius: 0.3rem 0.8rem 0.8rem 0.3rem;
 	padding: 0.7rem 1rem;
 	border-left: 0.3rem solid var(--accent);
-	background: color-mix(in srgb, var(--tertiary) 10%, transparent);
+	background: color-mix(in srgb, #52537a1a, var(--accent) 5%);
 	margin: 1rem 0;
 }
 
@@ -617,6 +645,18 @@ html[data-theme='dark'] .excalidraw-dark {
    often have none, so they use `| | |`. Hide a header whose cells are all empty. */
 .md thead:not(:has(th:not(:empty))) {
 	display: none;
+}
+
+/* Phones: specy.app's smaller body text and top-level headings. */
+@media (max-width: 600px) {
+	.md p:not(.mermaid *),
+	.md li:not(.mermaid *) {
+		font-size: 1.1rem;
+	}
+
+	.md h2 {
+		font-size: 2rem;
+	}
 }
 
 /* ─── Article layout + hero (matches specy.app BlogLayout) ───────────────── */
