@@ -589,6 +589,12 @@ html[data-theme='dark'] .excalidraw-dark {
 	font-family: var(--heading-font), sans-serif;
 }
 
+/* GFM tables need a header row; reference tables transcribed from screenshots
+   often have none, so they use `| | |`. Hide a header whose cells are all empty. */
+.md thead:not(:has(th:not(:empty))) {
+	display: none;
+}
+
 /* ─── Article layout + hero (matches specy.app BlogLayout) ───────────────── */
 .article {
 	width: 100%;
