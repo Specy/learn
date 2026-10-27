@@ -169,7 +169,7 @@ html[data-theme='light'] {
 	margin: 0 auto;
 }
 
-.plot-box svg {
+.plot-box > svg {
 	display: block;
 	width: 100%;
 	height: auto;
