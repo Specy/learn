@@ -134,6 +134,115 @@ html[data-theme='dark'] .shiki span {
 	color: var(--background-text);
 }
 
+/* ─── Content palette ────────────────────────────────────────────────────────
+   Named colours for notes: ```plot `color:` values and \textcolor{blue}{…} in
+   math (rewritten by rehypeThemeColors). One readable shade per theme.        */
+:root {
+	--palette-fg: var(--background-text);
+	--palette-muted: var(--muted);
+	--palette-blue: #6ea8fe;
+	--palette-red: #ff7070;
+	--palette-green: #5fd18b;
+	--palette-orange: #ffa94d;
+	--palette-purple: #c792ea;
+	--palette-teal: #4fd1c5;
+}
+
+html[data-theme='light'] {
+	--palette-blue: #1f5fd1;
+	--palette-red: #d12f2f;
+	--palette-green: #1e8a4c;
+	--palette-orange: #b85a00;
+	--palette-purple: #7b3fc4;
+	--palette-teal: #0e7f76;
+}
+
+/* ─── Plots (from rehypePlot) ────────────────────────────────────────────────
+   The padding leaves room for tick and axis labels that sit outside the box. */
+.plot {
+	margin: 1.5rem 0;
+	padding: 0.6em 2.4em 1.4em 2.8em;
+}
+
+.plot-box {
+	position: relative;
+	margin: 0 auto;
+}
+
+.plot-box svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+}
+
+.plot-axis {
+	stroke: var(--palette-fg);
+	stroke-width: 1.2;
+	fill: none;
+}
+
+.plot-grid {
+	stroke: var(--palette-muted);
+	stroke-opacity: 0.25;
+	fill: none;
+}
+
+.plot-label {
+	position: absolute;
+	white-space: nowrap;
+	line-height: 1;
+	font-size: 0.9em;
+	color: var(--palette-fg);
+	pointer-events: none;
+}
+
+.plot-label .katex {
+	color: inherit;
+}
+
+/* Anchor = which side of its point the label sits on (4px gap). */
+.plot-a-c {
+	transform: translate(-50%, -50%);
+}
+.plot-a-n {
+	transform: translate(-50%, calc(-100% - 4px));
+}
+.plot-a-s {
+	transform: translate(-50%, 4px);
+}
+.plot-a-e {
+	transform: translate(4px, -50%);
+}
+.plot-a-w {
+	transform: translate(calc(-100% - 4px), -50%);
+}
+.plot-a-ne {
+	transform: translate(4px, calc(-100% - 4px));
+}
+.plot-a-nw {
+	transform: translate(calc(-100% - 4px), calc(-100% - 4px));
+}
+.plot-a-se {
+	transform: translate(4px, 4px);
+}
+.plot-a-sw {
+	transform: translate(calc(-100% - 4px), 4px);
+}
+
+.plot figcaption {
+	margin-top: 0.9em;
+	text-align: center;
+	color: var(--muted);
+	font-size: 0.9em;
+}
+
+.plot-error,
+.katex-error {
+	color: var(--warn) !important;
+	white-space: pre-wrap;
+}
+
 /* ─── Excalidraw dual-theme embed ────────────────────────────────────────── */
 .excalidraw-dark {
 	display: none;

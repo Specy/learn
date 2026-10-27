@@ -15,7 +15,8 @@
 		"lint": "prettier --check . && eslint src",
 		"lint:check": "eslint src",
 		"format": "prettier --write .",
-		"lint:fix": "eslint src --fix"
+		"lint:fix": "eslint src --fix",
+		"check:content": "node scripts/checkContent.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

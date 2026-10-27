@@ -14,6 +14,8 @@ import rehypeStringify from 'rehype-stringify';
 import remarkObsidianLinks from './remarkObsidianLinks.js';
 import remarkCallouts from './remarkCallouts.js';
 import rehypeMermaid from './rehypeMermaid.js';
+import rehypePlot from './plot/rehypePlot.js';
+import rehypeThemeColors from './rehypeThemeColors.js';
 
 export type LinkResolver = {
 	note(target: string): string;
@@ -53,11 +55,13 @@ export function createProcessor(resolve: LinkResolver) {
 			.use(remarkRehype, { allowDangerousHtml: true })
 			.use(rehypeRaw)
 			.use(rehypeKatex)
+			.use(rehypeThemeColors) // after KaTeX: \textcolor{blue} → theme-aware var
 			// before rehypeSlug so ids land on the final heading elements
 			.use(rehypeDemoteHeadings)
 			.use(rehypeSlug)
 			.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
 			.use(rehypeMermaid)
+			.use(rehypePlot) // ```plot → static SVG, before Shiki like mermaid
 			.use(rehypeShiki, {
 				themes: { light: 'one-light', dark: 'one-dark-pro' },
 				fallbackLanguage: 'text',
