@@ -229,6 +229,10 @@ html[data-theme='light'] {
 .plot-a-sw {
 	transform: translate(calc(-100% - 4px), 4px);
 }
+/* A long x-axis label: right-aligned under the axis end, below the tick labels. */
+.plot-a-xl {
+	transform: translate(-100%, 1.7em);
+}
 
 .plot figcaption {
 	margin-top: 0.9em;

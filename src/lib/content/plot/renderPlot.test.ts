@@ -120,3 +120,32 @@ describe('points', () => {
 		expect(() => renderPlot('items:\n  - points: [[0, 0]]\n    shape: star', 'p')).toThrow(/shape/);
 	});
 });
+
+describe('circle and axis labels', () => {
+	it('draws a circle in data units, an ellipse with rx/ry', () => {
+		const html = renderPlot(
+			'x: [0, 4]\ny: [0, 2]\nwidth: 400\nheight: 200\nitems:\n  - circle: [2, 1]\n    r: 1\n  - circle: [1, 1]\n    rx: 0.5\n    ry: 0.25\n    fill: true',
+			'p'
+		);
+		expect(html).toContain('rx="100" ry="100"');
+		expect(html).toContain('rx="50" ry="25"');
+		expect(html).toContain('fill-opacity:0.15');
+	});
+	it('puts a long x label under the axis, a short one by the arrow', () => {
+		expect(renderPlot('xlabel: $x$\nitems: []', 'p')).toContain('plot-a-se');
+		expect(renderPlot('xlabel: "attribute 1 (X): weight index"\nitems: []', 'p')).toContain(
+			'plot-a-xl'
+		);
+	});
+});
+
+describe('aspect', () => {
+	it('aspect: equal sizes the height so circles are round', () => {
+		const html = renderPlot(
+			'x: [0, 4]\ny: [0, 2]\naspect: equal\nitems:\n  - circle: [2, 1]\n    r: 1',
+			'p'
+		);
+		expect(html).toContain('viewBox="0 0 480 240"');
+		expect(html).toContain('rx="120" ry="120"');
+	});
+});

@@ -12,7 +12,7 @@ type Item = Record<string, unknown>;
 
 /** Named colours resolve to theme-aware CSS variables (see app.css). */
 export const PALETTE = ['fg', 'muted', 'blue', 'red', 'green', 'orange', 'purple', 'teal'] as const;
-const ANCHORS = new Set(['c', 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']);
+const ANCHORS = new Set(['c', 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw', 'xl']);
 const KINDS = [
 	'fn',
 	'area',
@@ -24,7 +24,8 @@ const KINDS = [
 	'point',
 	'guide',
 	'text',
-	'brace'
+	'brace',
+	'circle'
 ];
 
 const esc = (s: string) =>
@@ -170,7 +171,11 @@ export function renderPlot(source: string, id: string): string {
 	const [y0, y1] = (spec.y as Num[] | undefined)?.map(num) ?? [-5, 5];
 	if (!(x1 > x0) || !(y1 > y0)) throw new Error('x and y must be [min, max] with min < max');
 	const W = Number(spec.width ?? 480);
-	const H = Number(spec.height ?? 300);
+	// aspect: equal — one unit is as long on y as on x, so circles stay round.
+	if (spec.aspect !== undefined && spec.aspect !== 'equal')
+		throw new Error('aspect must be "equal"');
+	const H =
+		spec.aspect === 'equal' ? Math.round((W * (y1 - y0)) / (x1 - x0)) : Number(spec.height ?? 300);
 	const X = (x: number) => ((x - x0) / (x1 - x0)) * W;
 	const Y = (y: number) => H - ((y - y0) / (y1 - y0)) * H;
 	const clampY = (py: number) => Math.max(-H * 4, Math.min(H * 5, py));
@@ -275,7 +280,10 @@ export function renderPlot(source: string, id: string): string {
 		if (showX) {
 			fore.push(`<path class="plot-axis" d="M0 ${f2(ay)}H${W - 1}"/>`);
 			fore.push(arrowHead(W, ay, 0, ay, 'var(--palette-fg)'));
-			label(spec.xlabel, W, ay, 'se');
+			// A short label (x, f(x)) sits by the arrow tip; a long one goes under
+			// the axis, right-aligned below the tick labels, so they don't collide.
+			const short = String(spec.xlabel ?? '').replace(/\$/g, '').length <= 4;
+			label(spec.xlabel, W, ay, short ? 'se' : 'xl');
 		}
 		if (showY) {
 			fore.push(`<path class="plot-axis" d="M${f2(ax)} ${H}V1"/>`);
@@ -421,6 +429,17 @@ export function renderPlot(source: string, id: string): string {
 			if (!['both', 'x', 'y'].includes(to)) throw new Error('guide "to" must be both, x or y');
 			const d = (to !== 'y' ? down : '') + (to !== 'x' ? across : '');
 			back.push(`<path d="${d}" fill="none" ${stroke({ dash: 'dotted', ...it }, 'muted', 1.2)}/>`);
+		} else if ('circle' in it) {
+			// circle: [cx, cy] + r (data units), or rx/ry for an ellipse; rotate in degrees.
+			const [cx, cy] = pt(it.circle);
+			const rx = num(it.rx ?? it.r ?? 1),
+				ry = num(it.ry ?? it.r ?? 1);
+			const [px, py] = [X(cx), Y(cy)];
+			const rot = it.rotate ? ` transform="rotate(${-num(it.rotate)} ${f2(px)} ${f2(py)})"` : '';
+			const shape = `cx="${f2(px)}" cy="${f2(py)}" rx="${f2((rx * W) / (x1 - x0))}" ry="${f2((ry * H) / (y1 - y0))}"${rot} clip-path="url(#${id})"`;
+			if (it.fill) back.push(`<ellipse ${shape} ${fill(color(it.color, 'blue'), it, 0.15)}/>`);
+			fore.push(`<ellipse ${shape} fill="none" ${stroke(it, 'fg', 1.4)}/>`);
+			label(it.label, px, Y(cy + ry), String(it.anchor ?? 'n'), it.color);
 		} else if ('text' in it) {
 			const [x, y] = pt(it.at);
 			label(it.text, X(x), Y(y), String(it.anchor ?? 'c'), it.color);
