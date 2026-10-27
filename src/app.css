@@ -235,7 +235,8 @@ html[data-theme='light'] {
 }
 
 .plot figcaption {
-	margin-top: 0.9em;
+	/* clears the tick labels (and a long x-axis label) hanging below the box */
+	margin-top: 2.4em;
 	text-align: center;
 	color: var(--muted);
 	font-size: 0.9em;
