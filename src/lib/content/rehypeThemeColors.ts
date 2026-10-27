@@ -8,6 +8,14 @@ import type { Root, Element } from 'hast';
 
 const NAMED = /(^|;)(\s*color:\s*)(blue|red|green|orange|purple|teal)(\s*)(?=;|$)/g;
 
+/** The same swap on an HTML string (```plot labels are inserted as raw HTML). */
+export function themeColorsInHtml(html: string): string {
+	return html.replace(
+		/(style="(?:[^"]*;)?\s*color:\s*)(blue|red|green|orange|purple|teal)(?=\s*[;"])/g,
+		'$1var(--palette-$2)'
+	);
+}
+
 export default function rehypeThemeColors() {
 	return (tree: Root) => {
 		visit(tree, 'element', (node: Element) => {

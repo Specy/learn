@@ -117,7 +117,9 @@ describe('points', () => {
 		expect(html.match(/stroke:var\(--palette-red\);stroke-width:1.6/g)).toHaveLength(3);
 	});
 	it('rejects unknown shapes', () => {
-		expect(() => renderPlot('items:\n  - points: [[0, 0]]\n    shape: star', 'p')).toThrow(/shape/);
+		expect(() => renderPlot('items:\n  - points: [[0, 0]]\n    shape: hexagon', 'p')).toThrow(
+			/shape/
+		);
 	});
 });
 
@@ -147,5 +149,20 @@ describe('aspect', () => {
 		);
 		expect(html).toContain('viewBox="0 0 480 240"');
 		expect(html).toContain('rx="120" ry="120"');
+	});
+});
+
+describe('label colours and more markers', () => {
+	it('maps \\textcolor in plot labels to theme variables', () => {
+		const html = renderPlot('items:\n  - text: $\\textcolor{red}{x}$\n    at: [0, 0]', 'p');
+		expect(html).toContain('color:var(--palette-red)');
+		expect(html).not.toMatch(/color:red[;"]/);
+	});
+	it('draws diamond and star markers', () => {
+		const html = renderPlot(
+			'items:\n  - points: [[0, 0]]\n    shape: diamond\n  - point: [1, 1]\n    shape: star',
+			'p'
+		);
+		expect(html.match(/<polygon/g)!.length).toBeGreaterThanOrEqual(4);
 	});
 });

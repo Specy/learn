@@ -5,6 +5,7 @@
 import katex from 'katex';
 import matter from 'gray-matter';
 import { bind, compile, parseDefinition, type Fn, type Scope } from './expr';
+import { themeColorsInHtml } from '../rehypeThemeColors';
 
 type Num = number | string;
 type Pt = [Num, Num];
@@ -52,7 +53,7 @@ export function renderLabel(label: string): string {
 		.split(/(\$[^$]+\$)/)
 		.map((part) =>
 			/^\$[^$]+\$$/.test(part)
-				? katex.renderToString(part.slice(1, -1), { throwOnError: true })
+				? themeColorsInHtml(katex.renderToString(part.slice(1, -1), { throwOnError: true }))
 				: esc(part)
 		)
 		.join('');
@@ -245,6 +246,18 @@ export function renderPlot(source: string, id: string): string {
 			return `<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${r}" style="${fillStyle}" ${clip}/>`;
 		if (shape === 'square')
 			return `<rect x="${f2(cx - r)}" y="${f2(cy - r)}" width="${2 * r}" height="${2 * r}" style="${fillStyle}" ${clip}/>`;
+		if (shape === 'diamond') {
+			const h = r * 1.3;
+			return `<polygon points="${f2(cx)},${f2(cy - h)} ${f2(cx + h)},${f2(cy)} ${f2(cx)},${f2(cy + h)} ${f2(cx - h)},${f2(cy)}" style="${fillStyle}" ${clip}/>`;
+		}
+		if (shape === 'star') {
+			const pts = Array.from({ length: 10 }, (_, k) => {
+				const a = -Math.PI / 2 + (k * Math.PI) / 5;
+				const rr = k % 2 ? r * 0.75 : r * 1.8;
+				return `${f2(cx + rr * Math.cos(a))},${f2(cy + rr * Math.sin(a))}`;
+			}).join(' ');
+			return `<polygon points="${pts}" style="${fillStyle}" ${clip}/>`;
+		}
 		if (shape === 'triangle') {
 			const h = r * 1.2;
 			return `<polygon points="${f2(cx)},${f2(cy - h)} ${f2(cx + h)},${f2(cy + h * 0.8)} ${f2(cx - h)},${f2(cy + h * 0.8)}" style="${fillStyle}" ${clip}/>`;
@@ -255,7 +268,7 @@ export function renderPlot(source: string, id: string): string {
 				: shape === 'plus'
 					? `M${f2(cx - r)} ${f2(cy)}H${f2(cx + r)}M${f2(cx)} ${f2(cy - r)}V${f2(cy + r)}`
 					: '';
-		if (!d) throw new Error('shape must be dot, x, plus, square or triangle');
+		if (!d) throw new Error('shape must be dot, x, plus, square, triangle, diamond or star');
 		return `<path d="${d}" style="stroke:${col};stroke-width:1.6;fill:none" ${clip}/>`;
 	}
 
