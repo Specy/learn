@@ -164,9 +164,19 @@ html[data-theme='light'] {
 	padding: 0.6em 2.4em 1.4em 2.8em;
 }
 
+@media (max-width: 600px) {
+	.plot {
+		padding: 0.4em 1.2em 1em 1.6em;
+	}
+}
+
 .plot-box {
 	position: relative;
 	margin: 0 auto;
+	/* Labels scale with the box (like the SVG beneath them) instead of keeping a
+	   fixed size and colliding when the plot shrinks on a phone. --plot-k is set
+	   per plot so that at full width the labels are 15px. */
+	container-type: inline-size;
 }
 
 .plot-box > svg {
@@ -192,7 +202,7 @@ html[data-theme='light'] {
 	position: absolute;
 	white-space: nowrap;
 	line-height: 1;
-	font-size: 0.9em;
+	font-size: min(0.9em, calc(var(--plot-k, 3) * 1cqw));
 	color: var(--palette-fg);
 	pointer-events: none;
 }

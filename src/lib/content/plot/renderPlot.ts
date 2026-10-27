@@ -486,5 +486,5 @@ export function renderPlot(source: string, id: string): string {
 	const caption = spec.caption
 		? `<figcaption>${renderLabel(String(spec.caption))}</figcaption>`
 		: '';
-	return `<figure class="plot"><div class="plot-box" style="max-width:${W}px">${svg}${labels.join('')}</div>${caption}</figure>`;
+	return `<figure class="plot"><div class="plot-box" style="max-width:${W}px;--plot-k:${f2(1500 / W)}">${svg}${labels.join('')}</div>${caption}</figure>`;
 }
