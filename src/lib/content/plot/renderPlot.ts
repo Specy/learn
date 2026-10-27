@@ -20,6 +20,7 @@ const KINDS = [
 	'line',
 	'vline',
 	'hline',
+	'points',
 	'point',
 	'guide',
 	'text',
@@ -227,6 +228,32 @@ export function renderPlot(source: string, id: string): string {
 		it.to === undefined ? x1 : num(it.to)
 	];
 
+	/** A dot (or x / + / square / triangle) at (x, y); `open` leaves it hollow. */
+	function marker(x: number, y: number, it: Item): string {
+		const col = color(it.color);
+		const r = Number(it.size ?? 3.2);
+		const [cx, cy] = [X(x), Y(y)];
+		const fillStyle = `fill:${it.open ? 'var(--background)' : col};stroke:${col};stroke-width:1.4`;
+		const clip = `clip-path="url(#${id})"`;
+		const shape = String(it.shape ?? 'dot');
+		if (shape === 'dot')
+			return `<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${r}" style="${fillStyle}" ${clip}/>`;
+		if (shape === 'square')
+			return `<rect x="${f2(cx - r)}" y="${f2(cy - r)}" width="${2 * r}" height="${2 * r}" style="${fillStyle}" ${clip}/>`;
+		if (shape === 'triangle') {
+			const h = r * 1.2;
+			return `<polygon points="${f2(cx)},${f2(cy - h)} ${f2(cx + h)},${f2(cy + h * 0.8)} ${f2(cx - h)},${f2(cy + h * 0.8)}" style="${fillStyle}" ${clip}/>`;
+		}
+		const d =
+			shape === 'x'
+				? `M${f2(cx - r)} ${f2(cy - r)}L${f2(cx + r)} ${f2(cy + r)}M${f2(cx - r)} ${f2(cy + r)}L${f2(cx + r)} ${f2(cy - r)}`
+				: shape === 'plus'
+					? `M${f2(cx - r)} ${f2(cy)}H${f2(cx + r)}M${f2(cx)} ${f2(cy - r)}V${f2(cy + r)}`
+					: '';
+		if (!d) throw new Error('shape must be dot, x, plus, square or triangle');
+		return `<path d="${d}" style="stroke:${col};stroke-width:1.6;fill:none" ${clip}/>`;
+	}
+
 	// ── grid & axes ──
 	const tickStep = (v: unknown, s: number) =>
 		v === true ? niceStep(s) : typeof v === 'number' ? v : 0;
@@ -376,13 +403,15 @@ export function renderPlot(source: string, id: string): string {
 			else label(it.label, W, Y(v), String(it.anchor ?? 'nw'), it.color);
 		} else if ('point' in it) {
 			const [x, y] = pt(it.point);
-			const col = color(it.color);
-			const inner = it.open ? 'var(--background)' : col;
-			fore.push(
-				`<circle cx="${f2(X(x))}" cy="${f2(Y(y))}" r="3.2" style="fill:${inner};stroke:${col};stroke-width:1.4" clip-path="url(#${id})"/>`
-			);
+			fore.push(marker(x, y, it));
 			if (x >= x0 && x <= x1 && y >= y0 && y <= y1)
 				label(it.label, X(x), Y(y), String(it.anchor ?? 'ne'), it.color);
+		} else if ('points' in it) {
+			if (!Array.isArray(it.points)) throw new Error('points must be a list of [x, y]');
+			for (const p of it.points as unknown[]) {
+				const [x, y] = pt(p);
+				fore.push(marker(x, y, it));
+			}
 		} else if ('guide' in it) {
 			const [x, y] = pt(it.guide);
 			// to: x → only down to the x-axis, y → only across to the y-axis

@@ -107,3 +107,16 @@ describe('plot options', () => {
 		expect(html).toMatch(/d="M240 300V150"/);
 	});
 });
+
+describe('points', () => {
+	it('draws one marker per point in the chosen shape', () => {
+		const html = renderPlot(
+			'x: [0, 4]\ny: [0, 4]\nitems:\n  - points: [[1, 1], [2, 3], [3, 2]]\n    shape: x\n    color: red',
+			'p'
+		);
+		expect(html.match(/stroke:var\(--palette-red\);stroke-width:1.6/g)).toHaveLength(3);
+	});
+	it('rejects unknown shapes', () => {
+		expect(() => renderPlot('items:\n  - points: [[0, 0]]\n    shape: star', 'p')).toThrow(/shape/);
+	});
+});
